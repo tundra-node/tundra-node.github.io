@@ -1,30 +1,54 @@
-body {
+html, body {
+  margin: 0;
+  padding: 0;
   font-family: system-ui, sans-serif;
-  max-width: 600px;
-  margin: auto;
-  padding: 1rem;
   line-height: 1.6;
-  background: #2E3440; /* nord polar night */
-  color: #D8DEE9;      /* nord snow storm */
+  min-height: 100vh;
+  background: #2E3440;
+  color: #D8DEE9;
 }
 
 a {
-  color: #81A1C1;       /* nord frost */
+  color: #81A1C1;
   text-decoration: none;
+  margin-left: 1rem;
 }
 
 a:hover {
   text-decoration: underline;
 }
 
-/* Remove header/footer margin if you want cleaner spacing */
 header {
   text-align: center;
-  margin: 2rem 0;
+  margin: 2rem 1rem;
+}
+
+article {
+  margin-left: 1rem;
+  margin-right: 1rem;
 }
 
 article a {
   display: block;
   margin-top: 1rem;
-  color: #88C0D0;      /* nord frost lighter */
+  color: #88C0D0;
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 0.9rem;
+  }
+
+  header {
+    margin: 1rem 0.5rem;
+  }
+
+  article {
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
+  }
+
+  article a {
+    margin-top: 0.5rem;
+  }
 }
