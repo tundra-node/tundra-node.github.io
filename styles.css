@@ -1,0 +1,30 @@
+body {
+  font-family: system-ui, sans-serif;
+  max-width: 600px;
+  margin: auto;
+  padding: 1rem;
+  line-height: 1.6;
+  background: #2E3440; /* nord polar night */
+  color: #D8DEE9;      /* nord snow storm */
+}
+
+a {
+  color: #81A1C1;       /* nord frost */
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Remove header/footer margin if you want cleaner spacing */
+header {
+  text-align: center;
+  margin: 2rem 0;
+}
+
+article a {
+  display: block;
+  margin-top: 1rem;
+  color: #88C0D0;      /* nord frost lighter */
+}
