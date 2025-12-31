@@ -8,6 +8,11 @@ html, body {
   color: #D8DEE9;
 }
 
+h1 {
+  margin-left: 1rem;
+  margin-right: 1rem;
+}
+
 a {
   color: #81A1C1;
   text-decoration: none;
