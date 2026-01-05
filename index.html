@@ -4,16 +4,73 @@
 <meta charset="UTF-8">
 <title>tundra-node</title>
 <link rel="stylesheet" href="styles.css">
+<style>
+.hero {
+  text-align: center;
+  padding: 4rem 1rem;
+}
+
+.hero h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.hero p {
+  color: #616E88;
+  font-size: 1.1rem;
+}
+
+.nav-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin: 3rem 0;
+}
+
+.nav-card {
+  background: #3B4252;
+  padding: 2rem;
+  border-radius: 8px;
+  border-left: 4px solid #88C0D0;
+  transition: transform 0.2s;
+}
+
+.nav-card:hover {
+  transform: translateY(-4px);
+}
+
+.nav-card h2 {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.nav-card a {
+  display: block;
+  color: inherit;
+}
+</style>
 </head>
 <body>
-<header>
+<div class="hero">
     <h1>tundra-node</h1>
-</header>
+    <p>Privacy tools, homelab projects, and open-source software</p>
+</div>
 
 <main>
-    <h1> <a href="blog.html">Blog</a></h1>
-    <h1> <a href="projects.html">Projects</a></h1>
+    <div class="nav-grid">
+        <div class="nav-card">
+            <a href="blog.html">
+                <h2>Blog</h2>
+                <p>Posts about I2P, Nix, and tech I'm working on</p>
+            </a>
+        </div>
+        <div class="nav-card">
+            <a href="projects.html">
+                <h2>Projects</h2>
+                <p>Tools and configs I've built</p>
+            </a>
+        </div>
+    </div>
 </main>
-
 </body>
 </html>
