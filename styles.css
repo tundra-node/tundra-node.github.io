@@ -134,6 +134,20 @@ ul li::before {
   margin-right: 0.5rem;
 }
 
+footer {
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 2px solid #4C566A;
+  text-align: center;
+  color: #616E88;
+  font-size: 0.9rem;
+}
+
+footer a {
+  color: #81A1C1;
+  margin: 0 0.5rem;
+}
+
 @media (max-width: 600px) {
   body {
     padding: 1rem;
