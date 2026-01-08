@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Hosting an I2P Eepsite | tundra-node</title>
+<link rel="stylesheet" href="../styles.css">
+<link rel="icon" type="image/x-icon" href="../favicon.ico">
+</head>
+<body>
+<article>
+<h1>Hosting an I2P Eepsite</h1>
+<p class="date">Jan 08, 2026</p>
+
+<p>I just set up this site on I2P using <a href="https://letsdecentralize.org/setup.html#i2p">this guide from Let's Decentralize</a>. It's simpler than you'd think. Here's how I did it.</p>
+
+<nav class="toc">
+<strong>Contents:</strong>
+<a href="#what">What's an eepsite?</a>
+<a href="#why">Why an Eepsite?</a>
+<a href="#setup">Setup</a>
+<a href="#webserver">Web server</a>
+<a href="#tunnel">I2P tunnel</a>
+<a href="#publish">Publishing your address</a>
+<a href="#tips">Tips</a>
+</nav>
+
+<h2 id="what">What's an Eepsite?</h2>
+
+<p>An eepsite is just a website hosted on I2P. Instead of a regular domain, you get a .i2p address like <code>o5ntqp4ylvgz5orzip7wxyvmszfwherbmqr2xcqvausex4avvjqa.b32.i2p</code>. Only accessible through I2P.</p>
+
+<p>The address is your public key hash. You can't choose it, but you can register a human-readable name through a jump service or addressbook.</p>
+
+<h2 id="why">Why an Eepsite?</h2>
+
+<p>I2P sites can't be taken down easily. No DNS to seize, no hosting provider to pressure. The network routes around censorship by design.</p>
+
+<p>Also useful for testing stuff without exposing it to clearnet. Your IP stays hidden, visitors' IPs stay hidden.</p>
+
+<h2 id="setup">Setup</h2>
+
+<p>First, get I2Pd running. If you're on Debian/Ubuntu:</p>
+
+<pre style="background: #3B4252; padding: 1rem; border-radius: 4px; overflow-x: auto;">
+<code>sudo apt install i2pd lynx -y</code>
+</pre>
+
+<p>Or use my <a href="../projects/i2p-easy-manager.html">I2P Easy Manager</a> if you want it automated.</p>
+
+<p>Wait 10-15 minutes for I2Pd to integrate into the network. You can check status with <code>systemctl status i2pd</code>.</p>
+
+<h2 id="tunnel">I2P Tunnel</h2>
+
+<p>Configure the tunnel before setting up the web server. Edit I2Pd's tunnel config:</p>
+
+<pre style="background: #3B4252; padding: 1rem; border-radius: 4px; overflow-x: auto;">
+<code>sudo nano /var/lib/i2pd/tunnels.conf</code>
+</pre>
+
+<p>Add this at the end:</p>
+
+<pre style="background: #3B4252; padding: 1rem; border-radius: 4px; overflow-x: auto;">
+<code>[eepsite]
+type = http
+host = 127.0.0.1
+port = 80
+keys = eepsite.dat</code>
+</pre>
+
+<p>Restart I2Pd:</p>
+
+<pre style="background: #3B4252; padding: 1rem; border-radius: 4px; overflow-x: auto;">
+<code>sudo systemctl restart i2pd</code>
+</pre>
+
+<p>Now get your eepsite address. Open the I2Pd console in lynx:</p>
+
+<pre style="background: #3B4252; padding: 1rem; border-radius: 4px; overflow-x: auto;">
+<code>lynx http://127.0.0.1:7070</code>
+</pre>
+
+<p>Arrow down to "I2P Tunnels" and hit enter. In the "Server Tunnels" section, you'll see something like <code>verylonghash.b32.i2p</code>. That's your address. Write it down. Press <code>q</code> then <code>y</code> to quit lynx.</p>
+
+<h2 id="webserver">Web Server</h2>
+
+<p>I followed the Let's Decentralize guide and used Caddy. Simpler than nginx for this.</p>
+
+<pre style="background: #3B4252; padding: 1rem; border-radius: 4px; overflow-x: auto;">
+<code>echo "deb [trusted=yes] https://apt.fury.io/caddy/ /" | sudo tee -a /etc/apt/sources.list.d/caddy-fury.list
+sudo apt update
+sudo apt install caddy -y</code>
+</pre>
+
+<p>Edit the Caddyfile:</p>
+
+<pre style="background: #3B4252; padding: 1rem; border-radius: 4px; overflow-x: auto;">
+<code>sudo nano /etc/caddy/Caddyfile</code>
+</pre>
+
+<p>Replace everything with this:</p>
+
+<pre style="background: #3B4252; padding: 1rem; border-radius: 4px; overflow-x: auto;">
+<code>http://your-eepsite-address.b32.i2p {
+    root * /var/www/eepsite
+    file_server
+    encode gzip
+    bind 127.0.0.1
+}</code>
+</pre>
+
+<p>Replace <code>your-eepsite-address.b32.i2p</code> with your actual address from earlier. The <code>bind 127.0.0.1</code> line stops the easiest deanonymization attacks by preventing external connections.</p>
+
+<p>Put your site files in <code>/var/www/eepsite</code>:</p>
+
+<pre style="background: #3B4252; padding: 1rem; border-radius: 4px; overflow-x: auto;">
+<code>sudo mkdir -p /var/www/eepsite
+# Copy your HTML files there</code>
+</pre>
+
+<p>Or if you have it on GitHub like me:</p>
+
+<pre style="background: #3B4252; padding: 1rem; border-radius: 4px; overflow-x: auto;">
+<code>sudo mkdir -p /var/www/eepsite
+git clone https://github.com/username/repo /var/www/eepsite</code>
+</pre>
+
+<p>And whenever you need to update it:</p>
+
+<pre style="background: #3B4252; padding: 1rem; border-radius: 4px; overflow-x: auto;">
+<code>sudo rm -rf /var/www/eepsite
+git clone https://github.com/username/repo /var/www/eepsite</code>
+</pre>
+
+<p>Restart Caddy:</p>
+
+<pre style="background: #3B4252; padding: 1rem; border-radius: 4px; overflow-x: auto;">
+<code>sudo systemctl restart caddy</code>
+</pre>
+
+<p>Your site should be live. Test it by accessing your .b32.i2p address through I2P.</p>
+
+<h2 id="publish">Publishing Your Address</h2>
+
+<p>Nobody can find your site unless they know the address. A few ways to share it:</p>
+
+<p><strong>hosts.txt</strong> - Some people manually add addresses to their hosts file. Include yours in a hosts.txt on your clearnet site.</p>
+
+<p><strong>Jump services</strong> - Services like <code>stats.i2p</code> and <code>notbob.i2p</code> let you register a readable name. Point <code>yourname.i2p</code> at your long .b32.i2p address.</p>
+
+<p><strong>Link from clearnet</strong> - Put your .b32.i2p address on your regular website like I did. People can click through if they have I2P configured.</p>
+
+<h2 id="tips">Tips</h2>
+
+<p><strong>Keep it light.</strong> I2P is slow. This entire site is under 14KB per page. No JavaScript, minimal CSS, optimized images only.</p>
+
+<p><strong>Back up your keys.</strong> The <code>eepsite.dat</code> file in <code>/var/lib/i2pd</code> (or wherever you configured the tunnel) is your identity. If you lose it, you lose your address. Copy it somewhere safe.</p>
+
+<p><strong>Check your tunnel health.</strong> The I2Pd console shows tunnel status. If it's red, your site's unreachable. Usually fixes itself, but sometimes you need to restart I2Pd.</p>
+
+<p><strong>No analytics.</strong> There's no Google Analytics equivalent that works well on I2P. Check your Caddy logs if you care about traffic: <code>sudo journalctl -u caddy</code></p>
+
+<p><strong>Use relative links.</strong> People might access your site through different proxies or with different base URLs. Relative paths avoid issues.</p>
+
+<p><strong>Consider a clearnet mirror.</strong> I host this on GitHub Pages and on I2P. People can choose. Put both links in your footer.</p>
+
+<p>That's it. You're live on I2P.</p>
+
+</article>
+<a href="../blog.html" class="back">← Back</a>
+<footer>
+  View on: <a href="https://tundra-node.github.io">Clearnet</a> | <a href="http://tundra-node.i2p">I2P</a>
+</footer>
+</body>
+</html>
