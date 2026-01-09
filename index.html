@@ -2,84 +2,88 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#2E3440">
+<meta name="referrer" content="no-referrer">
 <title>tundra-node</title>
+<meta name="description" content="Privacy tools, homelab projects, and open-source software">
+<meta property="og:title" content="tundra-node">
+<meta property="og:description" content="Privacy tools, homelab projects, and open-source software">
+<meta property="og:type" content="website">
 <link rel="stylesheet" href="styles.css">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
-<style>
-.hero {
-  text-align: center;
-  padding: 4rem 1rem;
-}
-
-.hero h1 {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-}
-
-.hero p {
-  color: #616E88;
-  font-size: 1.1rem;
-}
-
-.nav-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
-  margin: 3rem 0;
-}
-
-.nav-card {
-  background: #3B4252;
-  padding: 2rem;
-  border-radius: 8px;
-  border-left: 4px solid #88C0D0;
-  transition: transform 0.2s;
-}
-
-.nav-card:hover {
-  transform: translateY(-4px);
-}
-
-.nav-card h2 {
-  font-size: 1.8rem;
-  margin-bottom: 0.5rem;
-}
-
-.nav-card a {
-  display: block;
-  color: inherit;
-}
-</style>
+<link rel="alternate" type="application/rss+xml" href="rss.xml">
 </head>
 <body>
 <div class="hero">
     <h1>tundra-node</h1>
     <p>Privacy tools, homelab projects, and open-source software</p>
-    <a href="https://github.com/tundra-node">Github</a> | <a href="mailto:press-onyx-posted@duck.com">Email</a>
+    <a href="https://github.com/tundra-node"><img src="badges/github.gif" alt="GitHub badge" width="88" height="31"></a> <a href="mailto:press-onyx-posted@duck.com"><img src="badges/mailme.gif" alt="Mail Me badge" width="88" height="31"></a> <a href="rss.xml"><img src="badges/rss-button.gif" alt="RSS badge" width="88" height="31"></a>
 </div>
-
 <main>
     <div class="nav-grid">
         <div class="nav-card">
             <a href="blog.html">
                 <h2>Blog</h2>
                 <p>Posts about I2P, Nix, and tech I'm working on</p>
+                <p class="card-count">3 posts</p>
             </a>
         </div>
-              <div class="nav-card">
+        <div class="nav-card">
             <a href="guides.html">
                 <h2>Guides</h2>
-                <p>(WORKING ON DESCRIPTION)</p>
+                <p>Step-by-step tutorials for I2P, self-hosting, and privacy tools</p>
+                <p class="card-count">1 guide</p>
             </a>
         </div>
         <div class="nav-card">
             <a href="projects.html">
                 <h2>Projects</h2>
                 <p>Tools and configs I've built</p>
+                <p class="card-count">2 projects</p>
             </a>
         </div>
     </div>
+    <section class="badges">
+        <p class="badges-label">web badges</p>
+        <div class="badge-grid">
+            <a class="badge-btn" href="https://fmhy.net" title="FMHY - Free Media Heck Yeah">
+                <img src="badges/fmhy.gif" alt="FMHY badge" width="88" height="31">
+            </a>
+            <a class="badge-btn" href="https://nixos.org" title="Nix / NixOS">
+                <img src="badges/nix.gif" alt="Nix badge" width="88" height="31">
+            </a>
+            <a class="badge-btn" href="https://geti2p.net" title="I2P">
+                <img src="badges/i2p.gif" alt="I2P badge" width="88" height="31">
+            </a>
+            <a class="badge-btn" href="https://www.gnu.org/gnu/linux-and-gnu.html" title="GNU/Linux">
+                <img src="badges/gnu-linux.gif" alt="GNU/Linux badge" width="88" height="31">
+            </a>
+            <a class="badge-btn" href="https://www.proxmox.com" title="Proxmox">
+                <img src="badges/proxmox.gif" alt="Proxmox badge" width="88" height="31">
+            </a>
+            <a class="badge-btn" href="https://archive.org" title="Internet Archive">
+                <img src="badges/internetarchive.2540748731.png" alt="Internet Archive badge" width="88" height="31">
+            </a>
+            <a class="badge-btn" href="https://matrix.org" title="Matrix">
+                <img src="badges/matrix.2338528959.png" alt="Matrix badge" width="88" height="31">
+            </a>
+            <a class="badge-btn" href="https://repair.org" title="Right to Repair">
+                <img src="badges/right2repair.2750504548.png" alt="Right to repair badge" width="88" height="31">
+            </a>
+            <img src="badges/anonymize.2965571459.png" alt="Anonymize badge" width="88" height="31">
+            <img src="badges/cookie_free.1649305395.png" alt="Cookie free badge" width="88" height="31">
+            <img src="badges/dark-mode.2418972637.png" alt="Dark mode badge" width="88" height="31">
+            <a class="badge-btn" href="https://noscript.net" title="Zero JavaScript">
+                <img src="badges/javascript-zero.4140486521.png" alt="Zero JavaScript badge" width="88" height="31">
+            </a>
+            <a class="badge-btn" href="https://www.battleforthenet.com" title="Net Neutrality">
+                <img src="badges/nn.1872374465.png" alt="Net neutrality badge" width="88" height="31">
+            </a>
+        </div>
+    </section>
 </main>
+
 <footer>
   View on: <a href="https://tundra-node.github.io">Clearnet</a> | <a href="http://tundra-node.i2p">I2P</a>
 </footer>

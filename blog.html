@@ -2,26 +2,48 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#2E3440">
+<meta name="referrer" content="no-referrer">
 <title>blog | tundra-node</title>
+<meta name="description" content="Posts about I2P, Nix, and tech projects">
+<meta property="og:title" content="Blog">
+<meta property="og:description" content="Posts about I2P, Nix, and tech projects">
+<meta property="og:type" content="website">
 <link rel="stylesheet" href="styles.css">
 <link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="alternate" type="application/rss+xml" href="blog-rss.xml">
 </head>
 <body>
 <header>
     <h1>Blog</h1>
+    <p style="margin-top: 0.5rem;"><a href="blog-rss.xml">RSS Feed</a></p>
 </header>
 
-<main>
-    <ul>
-        <li>
-            <a href="posts/sites-apps.html">Sites & Apps I Can't Live Without</a>
-            <div style="color: #616E88; font-size: 0.9rem; margin-top: 0.25rem;">Jan 04, 2026</div>
-        </li>
-        <li>
-            <a href="posts/new_blog.html">New Blog</a>
-            <div style="color: #616E88; font-size: 0.9rem; margin-top: 0.25rem;">Dec 30, 2025</div>
-        </li>
-    </ul>
+<main id="main">
+    <div class="year-section">
+        <h2 class="year-header">2026</h2>
+        <ul>
+            <li>
+                <a href="posts/in-rainbows-review.html">In Rainbows: Radiohead's Most Human Album</a>
+                <div class="meta">Jan 09, 2026</div>
+            </li>
+            <li>
+                <a href="posts/sites-apps.html">Sites & Apps I Can't Live Without</a>
+                <div class="meta">Jan 04, 2026</div>
+            </li>
+        </ul>
+    </div>
+
+    <div class="year-section">
+        <h2 class="year-header">2025</h2>
+        <ul>
+            <li>
+                <a href="posts/new_blog.html">New Blog</a>
+                <div class="meta">Dec 30, 2025</div>
+            </li>
+        </ul>
+    </div>
 </main>
 <a href="./index.html" class="back">← Home</a>
 <footer>

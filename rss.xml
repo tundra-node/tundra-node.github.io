@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>tundra-node</title>
+    <link>https://tundra-node.github.io</link>
+    <description>Privacy tools, homelab projects, and open-source software</description>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 09 Jan 2026 00:00:00 GMT</lastBuildDate>
+    <atom:link href="https://tundra-node.github.io/rss.xml" rel="self" type="application/rss+xml"/>
+
+    <item>
+      <title>In Rainbows: Radiohead's Most Human Album</title>
+      <link>https://tundra-node.github.io/posts/in-rainbows-review.html</link>
+      <description>A review of Radiohead's In Rainbows and why it's their most emotionally grounded work.</description>
+      <pubDate>Wed, 09 Jan 2026 00:00:00 GMT</pubDate>
+      <guid>https://tundra-node.github.io/posts/in-rainbows-review.html</guid>
+    </item>
+
+    <item>
+      <title>Hosting an I2P Eepsite</title>
+      <link>https://tundra-node.github.io/guides/hosting-i2p-eepsite.html</link>
+      <description>Step-by-step guide to hosting your own website on the I2P network using I2Pd and Caddy.</description>
+      <pubDate>Wed, 08 Jan 2026 00:00:00 GMT</pubDate>
+      <guid>https://tundra-node.github.io/guides/hosting-i2p-eepsite.html</guid>
+    </item>
+
+    <item>
+      <title>Sites &amp; Apps I Can't Live Without</title>
+      <link>https://tundra-node.github.io/posts/sites-apps.html</link>
+      <description>Happy New Year! Here's what I actually use every day. Most of this stuff is free and
+        privacy-focused.
+      </description>
+      <pubDate>Sat, 04 Jan 2026 00:00:00 GMT</pubDate>
+      <guid>https://tundra-node.github.io/posts/sites-apps.html</guid>
+    </item>
+
+    <item>
+      <title>New Blog</title>
+      <link>https://tundra-node.github.io/posts/new_blog.html</link>
+      <description>Started a blog. Trying to keep every page under 14KB because bloat sucks. I'll write about I2P, my
+        projects, Nix, or whatever else I'm interested in.
+      </description>
+      <pubDate>Mon, 30 Dec 2025 00:00:00 GMT</pubDate>
+      <guid>https://tundra-node.github.io/posts/new_blog.html</guid>
+    </item>
+  </channel>
+</rss>
+

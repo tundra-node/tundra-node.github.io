@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://tundra-node.github.io/sitemap.xml
