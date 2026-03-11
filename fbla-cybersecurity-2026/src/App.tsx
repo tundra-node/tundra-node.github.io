@@ -47,46 +47,6 @@ interface ProgressData {
 
 // --- Components ---
 
-const CountdownTimer = () => {
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-
-  useEffect(() => {
-    const targetDate = new Date('2026-04-12T08:00:00');
-    const interval = setInterval(() => {
-      const now = new Date();
-      const diff = targetDate.getTime() - now.getTime();
-      
-      if (diff <= 0) {
-        clearInterval(interval);
-        return;
-      }
-
-      setTimeLeft({
-        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
-        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
-        minutes: Math.floor((diff / 1000 / 60) % 60),
-        seconds: Math.floor((diff / 1000) % 60),
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      {[
-        { label: 'Days', value: timeLeft.days },
-        { label: 'Hours', value: timeLeft.hours },
-        { label: 'Minutes', value: timeLeft.minutes },
-        { label: 'Seconds', value: timeLeft.seconds },
-      ].map((item) => (
-        <Card key={item.label} className="p-4 text-center border-blue-500/10 bg-slate-900/50 backdrop-blur-sm">
-          <div className="text-3xl font-mono font-bold text-blue-400">{item.value.toString().padStart(2, '0')}</div>
-          <div className="text-[10px] uppercase tracking-widest text-slate-500 mt-1">{item.label}</div>
-        </Card>
-      ))}
-    </div>
-  );
-};
 
 const Card = ({ children, className, id, onClick }: React.PropsWithChildren<{ className?: string; id?: string; onClick?: () => void }>) => (
   <div id={id} onClick={onClick} className={cn("bg-slate-900 border border-slate-800 rounded-lg overflow-hidden shadow-xl", className)}>
@@ -191,11 +151,10 @@ export default function App() {
           FBLA Cybersecurity <span className="text-blue-500">SLC 2026</span>
         </h1>
         <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-          Pennsylvania State Leadership Conference · April 12, 2026 · 100 questions · 50 minutes
+          State Leadership Conference · 100 questions · 50 minutes
         </p>
       </header>
 
-      <CountdownTimer />
 
       <div className="grid md:grid-cols-2 gap-6">
         <Card className="p-6 space-y-4 hover:border-blue-500/30 transition-colors cursor-pointer group" onClick={() => setMode('quiz')}>
