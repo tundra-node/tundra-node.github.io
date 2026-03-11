@@ -1,0 +1,64 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: fbla-cybersecurity-2026/package-lock.json
+
+      - name: Install dependencies
+        working-directory: fbla-cybersecurity-2026
+        run: npm ci
+
+      - name: Build React app
+        working-directory: fbla-cybersecurity-2026
+        run: npm run build
+
+      - name: Assemble site
+        run: |
+          mkdir -p _site
+          # Copy root static site (exclude the React source folder and CI config)
+          rsync -a --exclude='fbla-cybersecurity-2026' --exclude='.github' --exclude='_site' . _site/
+          # Copy built React app into subfolder
+          cp -r fbla-cybersecurity-2026/dist _site/fbla-cybersecurity-2026
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
