@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import {
+import React, { useState, useEffect, useMemo } from 'react';
+import { 
   Shield, 
   BookOpen, 
   Clock,
@@ -15,9 +15,7 @@ import {
   FileText,
   Zap,
   BarChart3,
-  Info,
-  ThumbsUp,
-  ThumbsDown,
+  Info
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { STUDY_DATA, CATEGORIES, Question } from './data';
@@ -47,6 +45,46 @@ interface ProgressData {
 
 // --- Components ---
 
+const CountdownTimer = () => {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+  useEffect(() => {
+    const targetDate = new Date('2026-04-12T08:00:00');
+    const interval = setInterval(() => {
+      const now = new Date();
+      const diff = targetDate.getTime() - now.getTime();
+      
+      if (diff <= 0) {
+        clearInterval(interval);
+        return;
+      }
+
+      setTimeLeft({
+        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((diff / 1000 / 60) % 60),
+        seconds: Math.floor((diff / 1000) % 60),
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {[
+        { label: 'Days', value: timeLeft.days },
+        { label: 'Hours', value: timeLeft.hours },
+        { label: 'Minutes', value: timeLeft.minutes },
+        { label: 'Seconds', value: timeLeft.seconds },
+      ].map((item) => (
+        <Card key={item.label} className="p-4 text-center border-blue-500/10 bg-slate-900/50 backdrop-blur-sm">
+          <div className="text-3xl font-mono font-bold text-blue-400">{item.value.toString().padStart(2, '0')}</div>
+          <div className="text-[10px] uppercase tracking-widest text-slate-500 mt-1">{item.label}</div>
+        </Card>
+      ))}
+    </div>
+  );
+};
 
 const Card = ({ children, className, id, onClick }: React.PropsWithChildren<{ className?: string; id?: string; onClick?: () => void }>) => (
   <div id={id} onClick={onClick} className={cn("bg-slate-900 border border-slate-800 rounded-lg overflow-hidden shadow-xl", className)}>
@@ -151,10 +189,11 @@ export default function App() {
           FBLA Cybersecurity <span className="text-blue-500">SLC 2026</span>
         </h1>
         <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-          State Leadership Conference · 100 questions · 50 minutes
+          Master the objectives for the Pennsylvania State Leadership Conference. 100 questions. 50 minutes. Zero room for error.
         </p>
       </header>
 
+      <CountdownTimer />
 
       <div className="grid md:grid-cols-2 gap-6">
         <Card className="p-6 space-y-4 hover:border-blue-500/30 transition-colors cursor-pointer group" onClick={() => setMode('quiz')}>
@@ -196,207 +235,91 @@ export default function App() {
   );
 
   const FlashcardView = () => {
-    const [category, setCategory] = useState<string>('All');
+    const [currentIndex, setCurrentIndex] = useState(0);
     const [isFlipped, setIsFlipped] = useState(false);
+    const [category, setCategory] = useState<string>('All');
 
-    // --- Persistent state ---
-    const [known, setKnown] = useState<Set<string>>(() => {
-      try { return new Set(JSON.parse(localStorage.getItem('fbla_fc_known') ?? '[]')); }
-      catch { return new Set(); }
-    });
+    const filteredCards = useMemo(() => {
+      if (category === 'All') return STUDY_DATA.flashcards;
+      return STUDY_DATA.flashcards.filter(c => c.category === category);
+    }, [category]);
 
-    // The active queue: an ordered array of card IDs. Unsure cards get reinserted;
-    // known cards are removed. Persisted so refreshing mid-session keeps your place.
-    const buildQueue = (cat: string) =>
-      STUDY_DATA.flashcards
-        .filter(c => cat === 'All' || c.category === cat)
-        .sort(() => Math.random() - 0.5)
-        .map(c => c.id);
+    const card = filteredCards[currentIndex];
 
-    const [queue, setQueue] = useState<string[]>(() => {
-      try {
-        const saved = JSON.parse(localStorage.getItem('fbla_fc_queue') ?? 'null');
-        if (Array.isArray(saved) && saved.length > 0) return saved;
-      } catch { /* fall through */ }
-      return buildQueue('All');
-    });
-
-    const [queuePos, setQueuePos] = useState(0); // index into queue we're currently showing
-
-    // Persist
-    useEffect(() => {
-      localStorage.setItem('fbla_fc_known', JSON.stringify([...known]));
-    }, [known]);
-
-    useEffect(() => {
-      localStorage.setItem('fbla_fc_queue', JSON.stringify(queue));
-    }, [queue]);
-
-    const totalCards = STUDY_DATA.flashcards.filter(c => category === 'All' || c.category === category).length;
-    const knownCount = [...known].filter(id => {
-      const c = STUDY_DATA.flashcards.find(f => f.id === id);
-      return c && (category === 'All' || c.category === category);
-    }).length;
-
-    // Current card is whatever ID is at queuePos
-    const currentId = queue[queuePos];
-    const card = STUDY_DATA.flashcards.find(f => f.id === currentId) ?? STUDY_DATA.flashcards[0];
-    const isDone = queue.length === 0;
-
-    const resetDeck = () => {
-      const newQ = buildQueue(category);
-      setQueue(newQ);
-      setQueuePos(0);
-      setIsFlipped(false);
-      setKnown(new Set());
-      localStorage.removeItem('fbla_fc_known');
-      localStorage.setItem('fbla_fc_queue', JSON.stringify(newQ));
-    };
-
-    const handleCategoryChange = (cat: string) => {
-      setCategory(cat);
-      const newQ = buildQueue(cat);
-      setQueue(newQ);
-      setQueuePos(0);
-      setIsFlipped(false);
-      // don't wipe known — preserve across category switches
-    };
-
-    const advance = (nextQueue: string[], nextPos: number) => {
+    const nextCard = () => {
       setIsFlipped(false);
       setTimeout(() => {
-        setQueue(nextQueue);
-        setQueuePos(nextPos);
+        setCurrentIndex((prev) => (prev + 1) % filteredCards.length);
       }, 150);
     };
 
-    const markKnown = () => {
-      const newKnown = new Set([...known, card.id]);
-      setKnown(newKnown);
-      // Remove this card from the queue entirely
-      const newQueue = [...queue.slice(0, queuePos), ...queue.slice(queuePos + 1)];
-      const nextPos = Math.min(queuePos, newQueue.length - 1);
-      advance(newQueue, Math.max(nextPos, 0));
+    const prevCard = () => {
+      setIsFlipped(false);
+      setTimeout(() => {
+        setCurrentIndex((prev) => (prev - 1 + filteredCards.length) % filteredCards.length);
+      }, 150);
     };
-
-    const markUnknown = () => {
-      // Remove from current position, reinsert 3 spots ahead (wraps to end if near end)
-      const without = [...queue.slice(0, queuePos), ...queue.slice(queuePos + 1)];
-      const insertAt = Math.min(queuePos + 3, without.length); // never beyond end
-      const newQueue = [...without.slice(0, insertAt), card.id, ...without.slice(insertAt)];
-      const nextPos = queuePos < newQueue.length ? queuePos : 0;
-      advance(newQueue, nextPos);
-    };
-
-    // Remaining = unique IDs still in queue (unsure cards may appear multiple times)
-    const remaining = new Set(queue).size;
-
-    if (isDone) {
-      return (
-        <div className="max-w-2xl mx-auto py-16 px-4 text-center space-y-6">
-          <CheckCircle2 className="w-16 h-16 text-emerald-500 mx-auto" />
-          <h2 className="text-3xl font-bold text-slate-100">Deck Complete!</h2>
-          <p className="text-slate-400">You marked all <span className="text-emerald-400 font-bold">{knownCount}</span> cards as known.</p>
-          <Button onClick={resetDeck} className="mx-auto">
-            <RotateCcw className="w-4 h-4" /> Start Over
-          </Button>
-        </div>
-      );
-    }
 
     return (
-      <div className="max-w-2xl mx-auto py-8 px-4 space-y-6">
-        <div className="flex items-center justify-between gap-3 flex-wrap">
+      <div className="max-w-2xl mx-auto py-8 px-4 space-y-8">
+        <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold text-slate-100">Flashcards</h2>
-          <div className="flex items-center gap-2">
-            <select
-              value={category}
-              onChange={(e) => handleCategoryChange(e.target.value)}
-              className="bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="All">All Categories</option>
-              {Object.values(CATEGORIES).map(cat => <option key={cat} value={cat}>{cat}</option>)}
-            </select>
-            <Button variant="outline" size="sm" onClick={resetDeck} title="Reset deck &amp; progress"
-              className="text-slate-500 hover:text-red-400 hover:border-red-500/40">
-              <RotateCcw className="w-4 h-4" />
-            </Button>
-          </div>
+          <select 
+            value={category} 
+            onChange={(e) => { setCategory(e.target.value); setCurrentIndex(0); setIsFlipped(false); }}
+            className="bg-slate-800 border border-slate-700 text-slate-100 text-sm rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="All">All Categories</option>
+            {Object.values(CATEGORIES).map(cat => <option key={cat} value={cat}>{cat}</option>)}
+          </select>
         </div>
 
-        {/* Stats bar */}
-        <div className="flex items-center justify-between text-xs font-mono">
-          <span className="text-emerald-500">{knownCount} known</span>
-          <span className="text-slate-500">{remaining} left in deck</span>
-          <span className="text-red-400">{queue.length - remaining > 0 ? `+${queue.length - remaining} repeats` : ''}</span>
-        </div>
-        {/* Progress: known out of total */}
-        <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-          <div className="bg-emerald-500 h-full transition-all duration-500" style={{ width: `${(knownCount / totalCards) * 100}%` }} />
-        </div>
-        <p className="text-xs text-slate-600 text-right font-mono">{knownCount}/{totalCards} mastered</p>
-
-        {/* Card */}
-        <div className="relative h-72" style={{ perspective: '1200px' }}>
+        <div className="relative h-80 perspective-1000">
           <AnimatePresence mode="wait">
             <motion.div
-              key={`${currentId}-${queuePos}`}
-              initial={{ opacity: 0, x: 30 }}
+              key={currentIndex}
+              initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -30 }}
-              transition={{ duration: 0.18 }}
-              className="w-full h-full"
-              style={{ transformStyle: 'preserve-3d' }}
+              exit={{ opacity: 0, x: -20 }}
+              className="w-full h-full cursor-pointer"
+              onClick={() => setIsFlipped(!isFlipped)}
             >
               <motion.div
                 animate={{ rotateY: isFlipped ? 180 : 0 }}
-                transition={{ duration: 0.5, type: 'spring', stiffness: 300, damping: 30 }}
-                className="w-full h-full relative cursor-pointer"
-                style={{ transformStyle: 'preserve-3d' }}
-                onClick={() => setIsFlipped(f => !f)}
+                transition={{ duration: 0.6, type: 'spring', stiffness: 260, damping: 20 }}
+                className="w-full h-full relative preserve-3d"
               >
                 {/* Front */}
-                <div
-                  className="absolute inset-0 rounded-lg border border-slate-800 p-8 flex flex-col items-center justify-center text-center bg-slate-900 shadow-xl"
-                  style={{ backfaceVisibility: 'hidden' }}
-                >
-                  <Badge className="mb-4">{card?.category}</Badge>
-                  <h3 className="text-2xl font-bold text-slate-100 leading-snug">{card?.front}</h3>
-                  <p className="text-slate-600 text-xs mt-6 uppercase tracking-widest">click to reveal answer</p>
-                </div>
+                <Card className={cn(
+                  "absolute inset-0 p-8 flex flex-col items-center justify-center text-center backface-hidden",
+                  isFlipped ? "pointer-events-none" : ""
+                )}>
+                  <Badge className="mb-4">{card.category}</Badge>
+                  <h3 className="text-3xl font-bold text-slate-100">{card.front}</h3>
+                  <p className="text-slate-500 text-sm mt-8">Click to flip</p>
+                </Card>
+
                 {/* Back */}
-                <div
-                  className="absolute inset-0 rounded-lg border border-blue-500/30 p-8 flex flex-col items-center justify-center text-center bg-slate-900 shadow-xl overflow-y-auto"
-                  style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
-                >
-                  <Badge className="mb-4 bg-blue-900/40 text-blue-300 border-blue-500/30">Answer</Badge>
-                  <p className="text-slate-200 text-base leading-relaxed whitespace-pre-line">{card?.back}</p>
-                  <p className="text-slate-600 text-xs mt-6 uppercase tracking-widest">click to flip back</p>
-                </div>
+                <Card className={cn(
+                  "absolute inset-0 p-8 flex flex-col items-center justify-center text-center backface-hidden rotate-y-180 bg-blue-900/20 border-blue-500/30",
+                  !isFlipped ? "pointer-events-none" : ""
+                )}>
+                  <Badge className="mb-4">Definition</Badge>
+                  <p className="text-xl text-slate-200 leading-relaxed">{card.back}</p>
+                  <p className="text-slate-500 text-sm mt-8">Click to flip back</p>
+                </Card>
               </motion.div>
             </motion.div>
           </AnimatePresence>
         </div>
 
-        {/* Got It / Still Learning */}
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={markUnknown}
-            className="flex items-center justify-center gap-2 py-3 rounded-lg border border-slate-700 text-slate-400 font-medium transition-all hover:border-red-500/40 hover:text-red-400 hover:bg-red-500/10"
-          >
-            <ThumbsDown className="w-4 h-4" /> Still Learning
-          </button>
-          <button
-            onClick={markKnown}
-            className="flex items-center justify-center gap-2 py-3 rounded-lg border border-slate-700 text-slate-400 font-medium transition-all hover:border-emerald-500/40 hover:text-emerald-400 hover:bg-emerald-500/10"
-          >
-            <ThumbsUp className="w-4 h-4" /> Got It
-          </button>
+        <div className="flex items-center justify-between">
+          <Button variant="secondary" onClick={prevCard}><ChevronLeft /> Previous</Button>
+          <div className="text-slate-400 font-mono text-sm">
+            {currentIndex + 1} of {filteredCards.length}
+          </div>
+          <Button variant="secondary" onClick={nextCard}>Next <ChevronRight /></Button>
         </div>
-
-        <p className="text-center text-xs text-slate-600">
-          "Still Learning" cards come back in 3 cards · "Got It" removes the card
-        </p>
       </div>
     );
   };
@@ -407,17 +330,21 @@ export default function App() {
     const [quizState, setQuizState] = useState<QuizState | null>(null);
 
     const startQuiz = (type: QuizType) => {
-      const pool = type === 'full'
-        ? [...STUDY_DATA.questions].sort(() => Math.random() - 0.5)
-        : STUDY_DATA.questions
-            .filter(q => selectedCategory === 'All' || q.category === selectedCategory)
-            .sort(() => Math.random() - 0.5)
-            .slice(0, 20);
+      let questions: Question[] = [];
+      if (type === 'full') {
+        // In a real app, we'd shuffle and pick 100. Here we take what we have.
+        questions = [...STUDY_DATA.questions].sort(() => Math.random() - 0.5);
+      } else {
+        questions = STUDY_DATA.questions
+          .filter(q => selectedCategory === 'All' || q.category === selectedCategory)
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 20);
+      }
 
       setQuizState({
-        questions: pool,
+        questions,
         currentIndex: 0,
-        answers: new Array(pool.length).fill(null),
+        answers: new Array(questions.length).fill(null),
         isFinished: false,
         startTime: Date.now(),
         timeRemaining: type === 'full' ? 50 * 60 : 15 * 60,
@@ -427,13 +354,17 @@ export default function App() {
 
     useEffect(() => {
       if (!quizState || quizState.isFinished) return;
+
       const timer = setInterval(() => {
         setQuizState(prev => {
           if (!prev) return null;
-          if (prev.timeRemaining <= 0) return { ...prev, isFinished: true };
+          if (prev.timeRemaining <= 0) {
+            return { ...prev, isFinished: true };
+          }
           return { ...prev, timeRemaining: prev.timeRemaining - 1 };
         });
       }, 1000);
+
       return () => clearInterval(timer);
     }, [quizState?.isFinished]);
 
@@ -446,12 +377,16 @@ export default function App() {
 
     const finishQuiz = () => {
       if (!quizState) return;
+      
+      // Update global progress
       const newProgress = { ...progress };
       quizState.questions.forEach((q, idx) => {
         const answer = quizState.answers[idx];
         if (answer !== null) {
           newProgress[q.category].total += 1;
-          if (answer === q.correctAnswer) newProgress[q.category].correct += 1;
+          if (answer === q.correctAnswer) {
+            newProgress[q.category].correct += 1;
+          }
         }
       });
       setProgress(newProgress);
@@ -465,22 +400,24 @@ export default function App() {
             <h2 className="text-3xl font-bold text-slate-100">Practice Exams</h2>
             <p className="text-slate-400">Choose your study format.</p>
           </div>
+
           <div className="grid gap-6">
             <Card className="p-6 border-blue-500/20 hover:border-blue-500/40 transition-all">
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h3 className="text-xl font-bold text-slate-100">Full Mock Exam</h3>
-                  <p className="text-sm text-slate-400">All questions · 50 minutes · All categories</p>
+                  <p className="text-sm text-slate-400">100 questions • 50 minutes • All categories</p>
                 </div>
                 <Badge className="bg-blue-900/30 text-blue-400 border-blue-500/30">Official Format</Badge>
               </div>
               <Button className="w-full" onClick={() => startQuiz('full')}>Start Mock Exam</Button>
             </Card>
+
             <Card className="p-6 border-slate-800 hover:border-slate-700 transition-all">
               <div className="space-y-4">
                 <div>
                   <h3 className="text-xl font-bold text-slate-100">Targeted Drill</h3>
-                  <p className="text-sm text-slate-400">20 questions · 15 minutes · Specific category</p>
+                  <p className="text-sm text-slate-400">20 questions • 15 minutes • Specific category</p>
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Select Category</label>
@@ -504,162 +441,117 @@ export default function App() {
     if (quizState?.isFinished) {
       const score = quizState.answers.filter((a, i) => a === quizState.questions[i].correctAnswer).length;
       const percentage = Math.round((score / quizState.questions.length) * 100);
-      const wrongQuestions = quizState.questions.filter((_, i) => quizState.answers[i] !== quizState.questions[i].correctAnswer);
-
-      // Per-category breakdown
-      const catBreakdown: Record<string, { correct: number; total: number }> = {};
-      quizState.questions.forEach((q, i) => {
-        if (!catBreakdown[q.category]) catBreakdown[q.category] = { correct: 0, total: 0 };
-        catBreakdown[q.category].total++;
-        if (quizState.answers[i] === q.correctAnswer) catBreakdown[q.category].correct++;
-      });
-      const catEntries = Object.entries(catBreakdown).sort((a, b) => {
-        const accA = a[1].correct / a[1].total;
-        const accB = b[1].correct / b[1].total;
-        return accA - accB; // worst first
-      });
 
       return (
         <div className="max-w-3xl mx-auto py-8 px-4 space-y-8">
-          {/* Score circle */}
           <Card className="p-8 text-center space-y-6">
-            <h2 className="text-3xl font-bold text-slate-100">Results</h2>
+            <div className="space-y-2">
+              <h2 className="text-3xl font-bold text-slate-100">Exam Results</h2>
+              <p className="text-slate-400">Performance summary for this session.</p>
+            </div>
+
             <div className="flex justify-center">
-              <div className="relative w-40 h-40">
-                <svg className="w-full h-full -rotate-90">
-                  <circle cx="80" cy="80" r="68" fill="transparent" stroke="currentColor" strokeWidth="10" className="text-slate-800" />
-                  <circle
-                    cx="80" cy="80" r="68" fill="transparent" stroke="currentColor" strokeWidth="10"
-                    strokeDasharray={2 * Math.PI * 68}
-                    strokeDashoffset={2 * Math.PI * 68 * (1 - percentage / 100)}
-                    className={cn("transition-all duration-1000", percentage >= 70 ? "text-emerald-500" : percentage >= 50 ? "text-yellow-500" : "text-red-500")}
+              <div className="relative w-48 h-48">
+                <svg className="w-full h-full transform -rotate-90">
+                  <circle cx="96" cy="96" r="88" fill="transparent" stroke="currentColor" strokeWidth="12" className="text-slate-800" />
+                  <circle 
+                    cx="96" cy="96" r="88" fill="transparent" stroke="currentColor" strokeWidth="12" 
+                    strokeDasharray={2 * Math.PI * 88}
+                    strokeDashoffset={2 * Math.PI * 88 * (1 - percentage / 100)}
+                    className={cn("transition-all duration-1000 ease-out", percentage >= 70 ? "text-emerald-500" : "text-blue-500")}
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-4xl font-bold text-slate-100">{percentage}%</span>
-                  <span className="text-xs text-slate-500 font-mono">{score}/{quizState.questions.length}</span>
+                  <span className="text-5xl font-bold text-slate-100">{percentage}%</span>
+                  <span className="text-xs text-slate-500 uppercase tracking-widest">{score} / {quizState.questions.length}</span>
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+
+            <div className="grid grid-cols-2 gap-4">
               <Button variant="secondary" onClick={() => setQuizType(null)}>Back to Menu</Button>
-              <Button onClick={() => startQuiz(quizType!)}>Retake</Button>
+              <Button onClick={() => startQuiz(quizType)}>Retake Quiz</Button>
             </div>
           </Card>
 
-          {/* Category breakdown */}
-          <Card className="p-6">
-            <h3 className="text-lg font-bold text-slate-100 mb-4">Performance by Category</h3>
-            <div className="space-y-3">
-              {catEntries.map(([cat, data]) => {
-                const pct = Math.round((data.correct / data.total) * 100);
-                return (
-                  <div key={cat}>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm text-slate-300">{cat}</span>
-                      <span className={cn("text-xs font-mono font-bold",
-                        pct >= 80 ? "text-emerald-400" : pct >= 60 ? "text-yellow-400" : "text-red-400"
-                      )}>{pct}% · {data.correct}/{data.total}</span>
-                    </div>
-                    <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-                      <div
-                        className={cn("h-full rounded-full transition-all duration-700",
-                          pct >= 80 ? "bg-emerald-500" : pct >= 60 ? "bg-yellow-500" : "bg-red-500"
-                        )}
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
+          <div className="space-y-4">
+            <h3 className="text-xl font-bold text-slate-100">Question Review</h3>
+            {quizState.questions.map((q, idx) => {
+              const isCorrect = quizState.answers[idx] === q.correctAnswer;
+              return (
+                <Card key={q.id} className={cn("p-6 border-l-4", isCorrect ? "border-l-emerald-500" : "border-l-red-500")}>
+                  <div className="flex justify-between items-start gap-4 mb-4">
+                    <p className="text-slate-200 font-medium">{idx + 1}. {q.question}</p>
+                    {isCorrect ? <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" /> : <XCircle className="w-5 h-5 text-red-500 shrink-0" />}
                   </div>
-                );
-              })}
-            </div>
-            <div className="mt-4 pt-4 border-t border-slate-800 grid grid-cols-3 gap-3 text-center text-xs text-slate-500">
-              <div><span className="block text-emerald-400 font-bold text-sm">{catEntries.filter(([,d]) => d.correct/d.total >= 0.8).length}</span>Strong areas</div>
-              <div><span className="block text-yellow-400 font-bold text-sm">{catEntries.filter(([,d]) => d.correct/d.total >= 0.6 && d.correct/d.total < 0.8).length}</span>Review needed</div>
-              <div><span className="block text-red-400 font-bold text-sm">{catEntries.filter(([,d]) => d.correct/d.total < 0.6).length}</span>Weak areas</div>
-            </div>
-          </Card>
-
-          {/* Wrong questions only */}
-          {wrongQuestions.length > 0 && (
-            <div className="space-y-4">
-              <h3 className="text-lg font-bold text-slate-100">
-                Missed Questions <span className="text-red-400 font-mono text-sm ml-2">{wrongQuestions.length}</span>
-              </h3>
-              {quizState.questions.map((q, idx) => {
-                const isCorrect = quizState.answers[idx] === q.correctAnswer;
-                if (isCorrect) return null;
-                return (
-                  <Card key={q.id} className="p-5 border-l-4 border-l-red-500">
-                    <div className="flex justify-between items-start gap-4 mb-3">
-                      <div>
-                        <Badge className="mb-2 text-[9px]">{q.category}</Badge>
-                        <p className="text-slate-200 font-medium text-sm">{idx + 1}. {q.question}</p>
+                  <div className="space-y-2 mb-4">
+                    {q.options.map((opt, optIdx) => (
+                      <div 
+                        key={optIdx} 
+                        className={cn(
+                          "p-3 rounded text-sm",
+                          optIdx === q.correctAnswer ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" :
+                          optIdx === quizState.answers[idx] ? "bg-red-500/10 text-red-400 border border-red-500/20" :
+                          "bg-slate-800/50 text-slate-400"
+                        )}
+                      >
+                        {opt}
                       </div>
-                      <XCircle className="w-5 h-5 text-red-500 shrink-0" />
-                    </div>
-                    <div className="space-y-1.5 mb-3">
-                      {q.options.map((opt, optIdx) => (
-                        <div key={optIdx} className={cn(
-                          "px-3 py-2 rounded text-sm",
-                          optIdx === q.correctAnswer
-                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                            : optIdx === quizState.answers[idx]
-                              ? "bg-red-500/10 text-red-400 border border-red-500/20"
-                              : "bg-slate-800/40 text-slate-500"
-                        )}>
-                          {optIdx === q.correctAnswer && <span className="font-bold mr-1">✓</span>}
-                          {optIdx === quizState.answers[idx] && optIdx !== q.correctAnswer && <span className="font-bold mr-1">✗</span>}
-                          {opt}
-                        </div>
-                      ))}
-                    </div>
-                    <div className="p-3 bg-slate-800/50 rounded text-xs text-slate-400">
-                      <span className="font-bold text-slate-300 block mb-0.5">Explanation</span>
-                      {q.explanation}
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-
-          {wrongQuestions.length === 0 && (
-            <Card className="p-6 text-center border-emerald-500/20">
-              <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto mb-2" />
-              <p className="text-emerald-400 font-bold">Perfect score — no missed questions!</p>
-            </Card>
-          )}
+                    ))}
+                  </div>
+                  <div className="p-4 bg-slate-800/50 rounded-lg text-sm text-slate-400">
+                    <span className="font-bold text-slate-200 block mb-1">Explanation:</span>
+                    {q.explanation}
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
         </div>
       );
     }
 
-    const currentQuestion = quizState!.questions[quizState!.currentIndex];
-    const formatTime = (seconds: number) => `${Math.floor(seconds / 60)}:${(seconds % 60).toString().padStart(2, '0')}`;
+    const currentQuestion = quizState.questions[quizState.currentIndex];
+    const formatTime = (seconds: number) => {
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return `${m}:${s.toString().padStart(2, '0')}`;
+    };
 
     return (
       <div className="max-w-3xl mx-auto py-8 px-4 space-y-6">
         <div className="flex items-center justify-between bg-slate-900 p-4 rounded-lg border border-slate-800 sticky top-4 z-10 shadow-lg">
           <div className="flex items-center gap-4">
-            <div className="text-slate-400 text-sm font-mono">Q {quizState!.currentIndex + 1}/{quizState!.questions.length}</div>
-            <Progress value={quizState!.currentIndex + 1} max={quizState!.questions.length} className="w-32 hidden sm:block" />
+            <div className="text-slate-400 text-sm font-mono">
+              Q: {quizState.currentIndex + 1} / {quizState.questions.length}
+            </div>
+            <Progress value={quizState.currentIndex + 1} max={quizState.questions.length} className="w-32 hidden sm:block" />
           </div>
-          <div className={cn("flex items-center gap-2 font-mono font-bold px-3 py-1 rounded",
-            quizState!.timeRemaining < 60 ? "text-red-500 animate-pulse" : "text-blue-400"
+          <div className={cn(
+            "flex items-center gap-2 font-mono font-bold px-3 py-1 rounded",
+            quizState.timeRemaining < 60 ? "text-red-500 animate-pulse" : "text-blue-400"
           )}>
             <Clock className="w-4 h-4" />
-            {formatTime(quizState!.timeRemaining)}
+            {formatTime(quizState.timeRemaining)}
           </div>
-          <Button variant="ghost" size="sm" onClick={() => setQuizType(null)}>Exit</Button>
+          <Button variant="ghost" size="sm" onClick={() => setQuizType(null)} className="text-xs">Exit</Button>
         </div>
 
         <AnimatePresence mode="wait">
-          <motion.div key={quizState!.currentIndex} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}>
+          <motion.div
+            key={quizState.currentIndex}
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
+          >
             <Card className="p-8 space-y-8">
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <Badge>{currentQuestion.category}</Badge>
-                <h3 className="text-xl font-bold text-slate-100 leading-snug">{currentQuestion.question}</h3>
+                <h3 className="text-2xl font-bold text-slate-100 leading-tight">
+                  {currentQuestion.question}
+                </h3>
               </div>
+
               <div className="grid gap-3">
                 {currentQuestion.options.map((option, idx) => (
                   <button
@@ -667,14 +559,16 @@ export default function App() {
                     onClick={() => handleAnswer(idx)}
                     className={cn(
                       "w-full text-left p-4 rounded-lg border transition-all duration-200 flex items-center gap-4 group",
-                      quizState!.answers[quizState!.currentIndex] === idx
+                      quizState.answers[quizState.currentIndex] === idx
                         ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/20"
                         : "bg-slate-800/50 border-slate-700 text-slate-300 hover:border-slate-500 hover:bg-slate-800"
                     )}
                   >
                     <div className={cn(
                       "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0",
-                      quizState!.answers[quizState!.currentIndex] === idx ? "bg-white/20 text-white" : "bg-slate-700 text-slate-400 group-hover:bg-slate-600"
+                      quizState.answers[quizState.currentIndex] === idx
+                        ? "bg-white/20 text-white"
+                        : "bg-slate-700 text-slate-400 group-hover:bg-slate-600"
                     )}>
                       {String.fromCharCode(65 + idx)}
                     </div>
@@ -687,14 +581,23 @@ export default function App() {
         </AnimatePresence>
 
         <div className="flex items-center justify-between">
-          <Button variant="secondary" disabled={quizState!.currentIndex === 0}
-            onClick={() => setQuizState({ ...quizState!, currentIndex: quizState!.currentIndex - 1 })}>
+          <Button 
+            variant="secondary" 
+            disabled={quizState.currentIndex === 0}
+            onClick={() => setQuizState({ ...quizState, currentIndex: quizState.currentIndex - 1 })}
+          >
             <ChevronLeft /> Previous
           </Button>
-          {quizState!.currentIndex === quizState!.questions.length - 1 ? (
-            <Button variant="primary" onClick={finishQuiz} className="bg-emerald-600 hover:bg-emerald-500">Finish</Button>
+          
+          {quizState.currentIndex === quizState.questions.length - 1 ? (
+            <Button variant="primary" onClick={finishQuiz} className="bg-emerald-600 hover:bg-emerald-500">
+              Finish Exam
+            </Button>
           ) : (
-            <Button variant="primary" onClick={() => setQuizState({ ...quizState!, currentIndex: quizState!.currentIndex + 1 })}>
+            <Button 
+              variant="primary" 
+              onClick={() => setQuizState({ ...quizState, currentIndex: quizState.currentIndex + 1 })}
+            >
               Next <ChevronRight />
             </Button>
           )}
@@ -787,48 +690,17 @@ export default function App() {
     );
   };
 
-  const CHEAT_SECTIONS = [
-    { id: 'sec1', label: 'Security Fundamentals', color: 'text-blue-400', items: 15 },
-    { id: 'sec2', label: 'Cyber Threats & Vulnerabilities', color: 'text-red-400', items: 20 },
-    { id: 'sec3', label: 'Security & Design', color: 'text-purple-400', items: 20 },
-    { id: 'sec4', label: 'Network & Data Security', color: 'text-emerald-400', items: 15 },
-    { id: 'sec5', label: 'Security Operations & Management', color: 'text-yellow-400', items: 10 },
-    { id: 'sec6', label: 'Security Protocols & Threat Mitigation', color: 'text-cyan-400', items: 20 },
-  ];
-
   const CheatSheetView = () => (
     <div className="max-w-4xl mx-auto py-8 px-4 space-y-12">
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold text-slate-100">Reference Sheet</h2>
-        <p className="text-slate-400">All 6 knowledge areas — 2025-2026 FBLA guidelines.</p>
+        <h2 className="text-3xl font-bold text-slate-100">Reference Cheat Sheet</h2>
+        <p className="text-slate-400">All 6 knowledge areas — mapped to the 2025-2026 FBLA guidelines.</p>
       </div>
-
-      {/* Table of Contents */}
-      <Card className="p-6 bg-slate-800/30">
-        <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Table of Contents</h3>
-        <ol className="space-y-2">
-          {CHEAT_SECTIONS.map((s, i) => (
-            <li key={s.id}>
-              <a
-                href={`#${s.id}`}
-                className={cn("flex items-center justify-between group hover:text-slate-100 transition-colors", s.color)}
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById(s.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }}
-              >
-                <span className="font-medium">{i + 1}. {s.label}</span>
-                <span className="text-xs text-slate-600 group-hover:text-slate-400 font-mono">{s.items} items</span>
-              </a>
-            </li>
-          ))}
-        </ol>
-      </Card>
 
       <div className="grid gap-10">
 
         {/* ── 1. Security Fundamentals ── */}
-        <section id="sec1" className="space-y-4 scroll-mt-20">
+        <section className="space-y-4">
           <div className="flex items-center gap-2 text-blue-400 border-b border-slate-800 pb-2">
             <Shield className="w-5 h-5" />
             <h3 className="text-xl font-bold uppercase tracking-wider">1 · Security Fundamentals</h3>
@@ -873,7 +745,7 @@ export default function App() {
               <div className="grid md:grid-cols-2 gap-4 text-xs text-slate-400">
                 <ul className="space-y-1">
                   <li><span className="text-slate-200">Non-repudiation:</span> Cannot deny performing an action (digital sigs).</li>
-                  <li><span className="text-slate-200">Identity Proofing:</span> Verifying real-world identity before issuing credentials.</li>
+                  <li><span className="text-slate-200">Identity Proofing:</span> Verifying a real-world identity before issuing credentials.</li>
                   <li><span className="text-slate-200">Attestation:</span> Cryptographic proof a system is in a trusted state (boot integrity).</li>
                 </ul>
                 <ul className="space-y-1">
@@ -887,7 +759,7 @@ export default function App() {
         </section>
 
         {/* ── 2. Cyber Threats and Vulnerabilities ── */}
-        <section id="sec2" className="space-y-4 scroll-mt-20">
+        <section className="space-y-4">
           <div className="flex items-center gap-2 text-red-400 border-b border-slate-800 pb-2">
             <AlertCircle className="w-5 h-5" />
             <h3 className="text-xl font-bold uppercase tracking-wider">2 · Cyber Threats &amp; Vulnerabilities</h3>
@@ -943,7 +815,7 @@ export default function App() {
         </section>
 
         {/* ── 3. Security and Design ── */}
-        <section id="sec3" className="space-y-4 scroll-mt-20">
+        <section className="space-y-4">
           <div className="flex items-center gap-2 text-purple-400 border-b border-slate-800 pb-2">
             <Zap className="w-5 h-5" />
             <h3 className="text-xl font-bold uppercase tracking-wider">3 · Security &amp; Design</h3>
@@ -1010,7 +882,7 @@ export default function App() {
         </section>
 
         {/* ── 4. Network and Data Security ── */}
-        <section id="sec4" className="space-y-4 scroll-mt-20">
+        <section className="space-y-4">
           <div className="flex items-center gap-2 text-emerald-400 border-b border-slate-800 pb-2">
             <RotateCcw className="w-5 h-5" />
             <h3 className="text-xl font-bold uppercase tracking-wider">4 · Network &amp; Data Security</h3>
@@ -1031,7 +903,7 @@ export default function App() {
               <ul className="text-sm text-slate-400 space-y-1">
                 <li><span className="text-emerald-400 font-bold">Caesar Cipher:</span> Shift each letter by a fixed amount (shift 3: A→D).</li>
                 <li><span className="text-emerald-400 font-bold">Substitution:</span> Replace each letter with another based on a key.</li>
-                <li><span className="text-emerald-400 font-bold">Shift Cipher:</span> General term for letter-shifting encryption.</li>
+                <li><span className="text-emerald-400 font-bold">Shift Cipher:</span> General term for letter-shifting encryption (Caesar is an example).</li>
               </ul>
             </Card>
             <Card className="p-4 bg-slate-800/30">
@@ -1045,7 +917,7 @@ export default function App() {
             <Card className="p-4 bg-slate-800/30">
               <h4 className="font-bold text-slate-200 mb-2">Access Control Models</h4>
               <ul className="text-sm text-slate-400 space-y-1">
-                <li><span className="text-emerald-400 font-bold">MAC</span> — Mandatory. OS enforces labels (Top Secret etc.).</li>
+                <li><span className="text-emerald-400 font-bold">MAC</span> — Mandatory. OS enforces labels (Top Secret etc.). User can't change permissions.</li>
                 <li><span className="text-emerald-400 font-bold">DAC</span> — Discretionary. Resource owner decides access.</li>
                 <li><span className="text-emerald-400 font-bold">RBAC</span> — Role-Based. Access by job role.</li>
               </ul>
@@ -1059,7 +931,7 @@ export default function App() {
                   <li><span className="text-slate-200">Token:</span> Physical/software device generating one-time codes.</li>
                 </ul>
                 <ul className="space-y-1">
-                  <li><span className="text-slate-200">Blockchain:</span> Distributed immutable ledger. Each block contains previous block's hash → tamper-evident.</li>
+                  <li><span className="text-slate-200">Blockchain:</span> Distributed immutable ledger. Each block contains previous block's hash → tamper-evident chain.</li>
                   <li><span className="text-slate-200">Hashing for integrity:</span> Store hash of file; recompute later to detect changes.</li>
                 </ul>
               </div>
@@ -1068,7 +940,7 @@ export default function App() {
         </section>
 
         {/* ── 5. Security Operations and Management ── */}
-        <section id="sec5" className="space-y-4 scroll-mt-20">
+        <section className="space-y-4">
           <div className="flex items-center gap-2 text-yellow-400 border-b border-slate-800 pb-2">
             <BarChart3 className="w-5 h-5" />
             <h3 className="text-xl font-bold uppercase tracking-wider">5 · Security Operations &amp; Management</h3>
@@ -1089,24 +961,24 @@ export default function App() {
               <h4 className="font-bold text-slate-200 mb-2">Firewall Types</h4>
               <ul className="text-sm text-slate-400 space-y-1">
                 <li><span className="text-yellow-400 font-bold">Packet-Filtering:</span> Inspects headers (IP/port). Fastest, least smart.</li>
-                <li><span className="text-yellow-400 font-bold">Stateful:</span> Tracks connection state.</li>
-                <li><span className="text-yellow-400 font-bold">NGFW:</span> Deep Packet Inspection + app awareness + IDS/IPS.</li>
-                <li><span className="text-yellow-400 font-bold">WAF:</span> Protects web apps. Defends against SQLi &amp; XSS.</li>
+                <li><span className="text-yellow-400 font-bold">Stateful:</span> Tracks connection state. Smarter than packet-filtering.</li>
+                <li><span className="text-yellow-400 font-bold">NGFW:</span> Deep Packet Inspection + app awareness + IDS/IPS built in.</li>
+                <li><span className="text-yellow-400 font-bold">WAF:</span> Specifically protects web apps. Defends against SQLi &amp; XSS.</li>
               </ul>
             </Card>
             <Card className="p-4 bg-slate-800/30">
               <h4 className="font-bold text-slate-200 mb-2">Firewall Rules &amp; ACLs</h4>
               <ul className="text-sm text-slate-400 space-y-1">
                 <li>• Rules are processed top-down; first match wins.</li>
-                <li>• ACL entries specify: source IP, dest IP, port, protocol, action.</li>
-                <li>• <span className="text-slate-200">Implicit deny all</span> — everything not explicitly allowed is dropped.</li>
+                <li>• ACL entries specify: source IP, destination IP, port, protocol, action (permit/deny).</li>
+                <li>• <span className="text-slate-200">Implicit deny all</span> — default rule at the bottom denies everything not explicitly allowed.</li>
               </ul>
             </Card>
             <Card className="p-4 bg-slate-800/30">
               <h4 className="font-bold text-slate-200 mb-2">Change Management &amp; Email Security</h4>
               <ul className="text-sm text-slate-400 space-y-1">
                 <li><span className="text-yellow-400 font-bold">Change Mgmt:</span> Request → Review → Approve → Test → Deploy → Document.</li>
-                <li>Prevents unauthorized changes from introducing vulnerabilities.</li>
+                <li>Prevents unauthorized/untested changes from introducing vulnerabilities.</li>
                 <li><span className="text-yellow-400 font-bold">SPF/DKIM/DMARC:</span> Authenticate email senders; stop spoofing.</li>
               </ul>
             </Card>
@@ -1114,7 +986,7 @@ export default function App() {
         </section>
 
         {/* ── 6. Security Protocols and Threat Mitigation ── */}
-        <section id="sec6" className="space-y-4 scroll-mt-20">
+        <section className="space-y-4">
           <div className="flex items-center gap-2 text-cyan-400 border-b border-slate-800 pb-2">
             <Info className="w-5 h-5" />
             <h3 className="text-xl font-bold uppercase tracking-wider">6 · Security Protocols &amp; Threat Mitigation</h3>
@@ -1134,24 +1006,24 @@ export default function App() {
             <Card className="p-4 bg-slate-800/30">
               <h4 className="font-bold text-slate-200 mb-2">IDS vs. IPS</h4>
               <ul className="text-sm text-slate-400 space-y-1">
-                <li><span className="text-cyan-400 font-bold">IDS</span> — Monitors and <span className="text-slate-200">alerts</span>. Passive — does NOT block.</li>
-                <li><span className="text-cyan-400 font-bold">IPS</span> — Sits inline; can <span className="text-slate-200">actively block</span> malicious traffic.</li>
+                <li><span className="text-cyan-400 font-bold">IDS</span> (Detection System) — Monitors traffic and <span className="text-slate-200">alerts</span> on suspicious activity. Passive — does NOT block.</li>
+                <li><span className="text-cyan-400 font-bold">IPS</span> (Prevention System) — Sits inline; can <span className="text-slate-200">actively block</span> malicious traffic. Active.</li>
               </ul>
             </Card>
             <Card className="p-4 bg-slate-800/30">
               <h4 className="font-bold text-slate-200 mb-2">Obfuscation Methods</h4>
               <ul className="text-sm text-slate-400 space-y-1">
-                <li><span className="text-cyan-400 font-bold">Tokenization:</span> Sensitive data → non-sensitive token.</li>
-                <li><span className="text-cyan-400 font-bold">Data Masking:</span> Real data → fake-but-realistic data.</li>
+                <li><span className="text-cyan-400 font-bold">Tokenization:</span> Sensitive data → non-sensitive token (credit cards).</li>
+                <li><span className="text-cyan-400 font-bold">Data Masking:</span> Real data → fake-but-realistic data (for dev/test).</li>
                 <li><span className="text-cyan-400 font-bold">Steganography:</span> Hide a message inside a file (image, audio).</li>
-                <li><span className="text-cyan-400 font-bold">Obfuscation:</span> Make code hard to read.</li>
+                <li><span className="text-cyan-400 font-bold">Obfuscation:</span> Make code hard to read (protect IP, slow reverse engineering).</li>
               </ul>
             </Card>
             <Card className="p-4 bg-slate-800/30">
               <h4 className="font-bold text-slate-200 mb-2">Digital Certificates &amp; CA</h4>
               <ul className="text-sm text-slate-400 space-y-1">
                 <li><span className="text-cyan-400 font-bold">CA</span> — Certificate Authority; trusted third party that signs certs.</li>
-                <li><span className="text-cyan-400 font-bold">Digital Cert:</span> Binds public key to identity; signed by CA.</li>
+                <li><span className="text-cyan-400 font-bold">Digital Cert:</span> Binds public key to identity; contains owner info, public key, expiration, CA signature.</li>
                 <li><span className="text-cyan-400 font-bold">PKI:</span> The overall system of CAs, certs, and policies.</li>
               </ul>
             </Card>
@@ -1160,8 +1032,8 @@ export default function App() {
               <div className="grid md:grid-cols-3 gap-4 text-xs text-slate-400">
                 <ul className="space-y-1">
                   <li className="text-slate-200 font-bold mb-1">Pen Testing</li>
-                  <li>• Black Box — no prior knowledge.</li>
-                  <li>• White Box — full knowledge.</li>
+                  <li>• Black Box — no prior knowledge (external attacker sim).</li>
+                  <li>• White Box — full knowledge (internal audit).</li>
                   <li>• Gray Box — partial knowledge.</li>
                   <li>Goal: find &amp; fix vulnerabilities before attackers do.</li>
                 </ul>
@@ -1183,6 +1055,62 @@ export default function App() {
           </div>
         </section>
 
+        {/* ── 7. Laws, Acts & Regulatory Frameworks ── */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 text-orange-400 border-b border-slate-800 pb-2">
+            <FileText className="w-5 h-5" />
+            <h3 className="text-xl font-bold uppercase tracking-wider">7 · Laws, Acts &amp; Regulations</h3>
+            <span className="ml-auto text-xs text-slate-500 font-mono">Know these cold</span>
+          </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <Card className="p-4 bg-slate-800/30">
+              <h4 className="font-bold text-slate-200 mb-2">Privacy Laws — U.S.</h4>
+              <ul className="text-xs text-slate-400 space-y-2">
+                <li><span className="text-orange-400 font-bold">HIPAA (1996)</span> — Protects patient health information (PHI). Applies to healthcare providers, insurers, and their business associates.</li>
+                <li><span className="text-orange-400 font-bold">FERPA (1974)</span> — Protects student education records. Schools must have consent before releasing records. Applies to federally funded schools.</li>
+                <li><span className="text-orange-400 font-bold">COPPA (1998)</span> — Requires verifiable parental consent before collecting personal data from children under 13. Enforced by the FTC.</li>
+                <li><span className="text-orange-400 font-bold">GLBA (1999)</span> — Requires financial institutions to protect customers' non-public personal information and allow opt-out of data sharing.</li>
+              </ul>
+            </Card>
+            <Card className="p-4 bg-slate-800/30">
+              <h4 className="font-bold text-slate-200 mb-2">Privacy Laws — International &amp; Broad</h4>
+              <ul className="text-xs text-slate-400 space-y-2">
+                <li><span className="text-orange-400 font-bold">GDPR (EU, 2018)</span> — Comprehensive EU data privacy regulation. Applies globally to any org handling EU residents' data. Key rights: access, erasure, portability. Breach notification within 72 hours. Fines up to 4% of global revenue.</li>
+                <li><span className="text-orange-400 font-bold">CAN-SPAM Act (2003)</span> — U.S. law governing commercial email. Requires: honest subject lines, physical address, working opt-out. Opt-outs honored within 10 business days.</li>
+              </ul>
+            </Card>
+            <Card className="p-4 bg-slate-800/30">
+              <h4 className="font-bold text-slate-200 mb-2">Cybercrime &amp; Federal Security Laws</h4>
+              <ul className="text-xs text-slate-400 space-y-2">
+                <li><span className="text-orange-400 font-bold">CFAA (1986)</span> — Computer Fraud and Abuse Act. Primary U.S. law criminalizing unauthorized computer access. Intent does NOT excuse unauthorized access — authorization is the key legal distinction.</li>
+                <li><span className="text-orange-400 font-bold">FISMA (2002)</span> — Requires all federal agencies to implement an information security program using NIST standards and report breaches to oversight bodies.</li>
+                <li><span className="text-orange-400 font-bold">CIRCIA (2022)</span> — Critical infrastructure entities must report significant cyber incidents to CISA within 72 hours; ransomware payments within 24 hours.</li>
+              </ul>
+            </Card>
+            <Card className="p-4 bg-slate-800/30">
+              <h4 className="font-bold text-slate-200 mb-2">Financial, Copyright &amp; Industry Standards</h4>
+              <ul className="text-xs text-slate-400 space-y-2">
+                <li><span className="text-orange-400 font-bold">SOX (2002)</span> — Sarbanes-Oxley. Enacted after Enron scandal. Executives personally certify financial statements. Mandates IT controls over financial data integrity. Criminal penalties for non-compliance.</li>
+                <li><span className="text-orange-400 font-bold">DMCA (1998)</span> — Digital Millennium Copyright Act. Prohibits circumventing DRM/copy protection, even for personal use. Provides safe harbor for platforms that act on takedown notices.</li>
+                <li><span className="text-orange-400 font-bold">PCI DSS</span> — Industry standard (not a law) for any org storing/processing card data. Requires encryption, access controls, and regular audits. Non-compliance = fines or loss of card processing rights.</li>
+              </ul>
+            </Card>
+            <Card className="p-4 bg-slate-800/30 md:col-span-2">
+              <h4 className="font-bold text-slate-200 mb-2">Quick Comparison — Who Does Each Law Protect?</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-slate-400">
+                <div><span className="text-orange-400 block font-bold mb-1">HIPAA</span>Patients — medical/health data</div>
+                <div><span className="text-orange-400 block font-bold mb-1">FERPA</span>Students — academic records</div>
+                <div><span className="text-orange-400 block font-bold mb-1">COPPA</span>Children under 13 — online data</div>
+                <div><span className="text-orange-400 block font-bold mb-1">GLBA</span>Bank/finance customers — personal financial info</div>
+                <div><span className="text-orange-400 block font-bold mb-1">GDPR</span>EU residents — all personal data</div>
+                <div><span className="text-orange-400 block font-bold mb-1">CAN-SPAM</span>Email recipients — commercial messages</div>
+                <div><span className="text-orange-400 block font-bold mb-1">CFAA</span>Computer systems — from unauthorized access</div>
+                <div><span className="text-orange-400 block font-bold mb-1">SOX</span>Investors — accurate financial reporting</div>
+              </div>
+            </Card>
+          </div>
+        </section>
+
       </div>
     </div>
   );
@@ -1191,12 +1119,14 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-blue-500/30">
+      {/* Navigation */}
       <nav className="border-b border-slate-800 bg-slate-950/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => setMode('home')}>
             <Shield className="w-6 h-6 text-blue-500" />
             <span className="font-bold text-lg tracking-tight hidden sm:block">FBLA <span className="text-blue-500">CyberStudy</span></span>
           </div>
+
           <div className="hidden md:flex items-center gap-1">
             <Button variant="ghost" onClick={() => setMode('home')} className={cn(mode === 'home' && "bg-slate-800 text-blue-400")}>Home</Button>
             <Button variant="ghost" onClick={() => setMode('flashcards')} className={cn(mode === 'flashcards' && "bg-slate-800 text-blue-400")}>Flashcards</Button>
@@ -1204,12 +1134,14 @@ export default function App() {
             <Button variant="ghost" onClick={() => setMode('progress')} className={cn(mode === 'progress' && "bg-slate-800 text-blue-400")}>Progress</Button>
             <Button variant="ghost" onClick={() => setMode('cheat-sheet')} className={cn(mode === 'cheat-sheet' && "bg-slate-800 text-blue-400")}>Reference</Button>
           </div>
+
           <button className="md:hidden p-2 text-slate-400" onClick={() => setIsMenuOpen(!isMenuOpen)}>
             {isMenuOpen ? <X /> : <Menu />}
           </button>
         </div>
       </nav>
 
+      {/* Mobile Menu */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div 
@@ -1243,6 +1175,7 @@ export default function App() {
         )}
       </AnimatePresence>
 
+      {/* Content */}
       <main className="pb-20">
         <AnimatePresence mode="wait">
           <motion.div
@@ -1260,6 +1193,11 @@ export default function App() {
           </motion.div>
         </AnimatePresence>
       </main>
+
+      {/* Footer Info */}
+      <footer className="border-t border-slate-900 py-8 text-center text-slate-600 text-xs">
+        <p>© 2026 FBLA Cybersecurity SLC Prep • Pennsylvania FBLA</p>
+      </footer>
     </div>
   );
 }
