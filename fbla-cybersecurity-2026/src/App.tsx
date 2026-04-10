@@ -694,7 +694,7 @@ export default function App() {
     <div className="max-w-4xl mx-auto py-8 px-4 space-y-12">
       <div className="text-center space-y-2">
         <h2 className="text-3xl font-bold text-slate-100">Reference Cheat Sheet</h2>
-        <p className="text-slate-400">All 6 knowledge areas — mapped to the 2025-2026 FBLA guidelines.</p>
+        <p className="text-slate-400">All 6 knowledge areas + laws &amp; regulations — 2025-2026 FBLA guidelines.</p>
       </div>
 
       <div className="grid gap-10">
@@ -1066,23 +1066,23 @@ export default function App() {
             <Card className="p-4 bg-slate-800/30">
               <h4 className="font-bold text-slate-200 mb-2">Privacy Laws — U.S.</h4>
               <ul className="text-xs text-slate-400 space-y-2">
-                <li><span className="text-orange-400 font-bold">HIPAA (1996)</span> — Protects patient health information (PHI). Applies to healthcare providers, insurers, and their business associates.</li>
-                <li><span className="text-orange-400 font-bold">FERPA (1974)</span> — Protects student education records. Schools must have consent before releasing records. Applies to federally funded schools.</li>
-                <li><span className="text-orange-400 font-bold">COPPA (1998)</span> — Requires verifiable parental consent before collecting personal data from children under 13. Enforced by the FTC.</li>
-                <li><span className="text-orange-400 font-bold">GLBA (1999)</span> — Requires financial institutions to protect customers' non-public personal information and allow opt-out of data sharing.</li>
+                <li><span className="text-orange-400 font-bold">HIPAA (1996)</span> — Protects patient health information (PHI). Applies to healthcare providers, insurers, and business associates.</li>
+                <li><span className="text-orange-400 font-bold">FERPA (1974)</span> — Protects student education records. Schools need consent before releasing records. Applies to federally funded schools.</li>
+                <li><span className="text-orange-400 font-bold">COPPA (1998)</span> — Requires verifiable parental consent before collecting data from children under 13. Enforced by the FTC.</li>
+                <li><span className="text-orange-400 font-bold">GLBA (1999)</span> — Requires financial institutions to protect customers' non-public personal info and allow opt-out of data sharing.</li>
               </ul>
             </Card>
             <Card className="p-4 bg-slate-800/30">
               <h4 className="font-bold text-slate-200 mb-2">Privacy Laws — International &amp; Broad</h4>
               <ul className="text-xs text-slate-400 space-y-2">
-                <li><span className="text-orange-400 font-bold">GDPR (EU, 2018)</span> — Comprehensive EU data privacy regulation. Applies globally to any org handling EU residents' data. Key rights: access, erasure, portability. Breach notification within 72 hours. Fines up to 4% of global revenue.</li>
-                <li><span className="text-orange-400 font-bold">CAN-SPAM Act (2003)</span> — U.S. law governing commercial email. Requires: honest subject lines, physical address, working opt-out. Opt-outs honored within 10 business days.</li>
+                <li><span className="text-orange-400 font-bold">GDPR (EU, 2018)</span> — Comprehensive EU data privacy law. Applies globally to any org handling EU residents' data. Key rights: access, erasure, portability. Breach notification within 72 hours. Fines up to 4% of global revenue.</li>
+                <li><span className="text-orange-400 font-bold">CAN-SPAM (2003)</span> — Governs commercial email in the U.S. Requires honest subject lines, physical address, working opt-out honored within 10 business days.</li>
               </ul>
             </Card>
             <Card className="p-4 bg-slate-800/30">
               <h4 className="font-bold text-slate-200 mb-2">Cybercrime &amp; Federal Security Laws</h4>
               <ul className="text-xs text-slate-400 space-y-2">
-                <li><span className="text-orange-400 font-bold">CFAA (1986)</span> — Computer Fraud and Abuse Act. Primary U.S. law criminalizing unauthorized computer access. Intent does NOT excuse unauthorized access — authorization is the key legal distinction.</li>
+                <li><span className="text-orange-400 font-bold">CFAA (1986)</span> — Computer Fraud and Abuse Act. Primary U.S. law criminalizing unauthorized computer access. Intent doesn't excuse it — authorization is the key distinction.</li>
                 <li><span className="text-orange-400 font-bold">FISMA (2002)</span> — Requires all federal agencies to implement an information security program using NIST standards and report breaches to oversight bodies.</li>
                 <li><span className="text-orange-400 font-bold">CIRCIA (2022)</span> — Critical infrastructure entities must report significant cyber incidents to CISA within 72 hours; ransomware payments within 24 hours.</li>
               </ul>
@@ -1090,18 +1090,18 @@ export default function App() {
             <Card className="p-4 bg-slate-800/30">
               <h4 className="font-bold text-slate-200 mb-2">Financial, Copyright &amp; Industry Standards</h4>
               <ul className="text-xs text-slate-400 space-y-2">
-                <li><span className="text-orange-400 font-bold">SOX (2002)</span> — Sarbanes-Oxley. Enacted after Enron scandal. Executives personally certify financial statements. Mandates IT controls over financial data integrity. Criminal penalties for non-compliance.</li>
-                <li><span className="text-orange-400 font-bold">DMCA (1998)</span> — Digital Millennium Copyright Act. Prohibits circumventing DRM/copy protection, even for personal use. Provides safe harbor for platforms that act on takedown notices.</li>
-                <li><span className="text-orange-400 font-bold">PCI DSS</span> — Industry standard (not a law) for any org storing/processing card data. Requires encryption, access controls, and regular audits. Non-compliance = fines or loss of card processing rights.</li>
+                <li><span className="text-orange-400 font-bold">SOX (2002)</span> — Sarbanes-Oxley. Enacted after Enron. Executives personally certify financial statements. Mandates IT controls over financial data. Criminal penalties for non-compliance.</li>
+                <li><span className="text-orange-400 font-bold">DMCA (1998)</span> — Prohibits circumventing DRM/copy protection even for personal use. Provides safe harbor for platforms that act on takedown notices.</li>
+                <li><span className="text-orange-400 font-bold">PCI DSS</span> — Industry standard (not a law) for orgs storing/processing card data. Requires encryption, access controls, and regular audits.</li>
               </ul>
             </Card>
             <Card className="p-4 bg-slate-800/30 md:col-span-2">
-              <h4 className="font-bold text-slate-200 mb-2">Quick Comparison — Who Does Each Law Protect?</h4>
+              <h4 className="font-bold text-slate-200 mb-2">Quick Reference — Who Does Each Law Protect?</h4>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-slate-400">
                 <div><span className="text-orange-400 block font-bold mb-1">HIPAA</span>Patients — medical/health data</div>
                 <div><span className="text-orange-400 block font-bold mb-1">FERPA</span>Students — academic records</div>
                 <div><span className="text-orange-400 block font-bold mb-1">COPPA</span>Children under 13 — online data</div>
-                <div><span className="text-orange-400 block font-bold mb-1">GLBA</span>Bank/finance customers — personal financial info</div>
+                <div><span className="text-orange-400 block font-bold mb-1">GLBA</span>Finance customers — personal financial info</div>
                 <div><span className="text-orange-400 block font-bold mb-1">GDPR</span>EU residents — all personal data</div>
                 <div><span className="text-orange-400 block font-bold mb-1">CAN-SPAM</span>Email recipients — commercial messages</div>
                 <div><span className="text-orange-400 block font-bold mb-1">CFAA</span>Computer systems — from unauthorized access</div>
