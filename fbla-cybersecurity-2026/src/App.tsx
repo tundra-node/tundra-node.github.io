@@ -18,6 +18,8 @@ import {
   Info,
   ThumbsUp,
   ThumbsDown,
+  Download,
+  Upload,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { STUDY_DATA, CATEGORIES, Question } from './data';
