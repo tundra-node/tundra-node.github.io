@@ -441,6 +441,36 @@ export default function App() {
     const [quizType, setQuizType] = useState<QuizType | null>(null);
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
     const [quizState, setQuizState] = useState<QuizState | null>(null);
+    const [drillLabel, setDrillLabel] = useState<string>('');
+
+    // Weak areas: bottom 2 categories by accuracy (min 1 attempt), else fallback
+    const getWeakCategories = (): string[] => {
+      const entries = Object.entries(progress)
+        .filter(([, d]) => d.total > 0)
+        .sort((a, b) => (a[1].correct / a[1].total) - (b[1].correct / b[1].total));
+      if (entries.length >= 2) return entries.slice(0, 2).map(([cat]) => cat);
+      if (entries.length === 1) return [entries[0][0], CATEGORIES.NETWORK];
+      return [CATEGORIES.NETWORK, CATEGORIES.OPERATIONS];
+    };
+
+    const startWeakDrill = () => {
+      const cats = getWeakCategories();
+      setSelectedCategories(cats);
+      setDrillLabel(`Weak Areas: ${cats.map(c => c.split(' ').slice(-1)[0]).join(' + ')}`);
+      const pool = STUDY_DATA.questions
+        .filter(q => cats.includes(q.category))
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 20);
+      setQuizState({
+        questions: pool,
+        currentIndex: 0,
+        answers: new Array(pool.length).fill(null),
+        isFinished: false,
+        startTime: Date.now(),
+        timeRemaining: 15 * 60,
+      });
+      setQuizType('drill');
+    };
 
     const toggleCategory = (cat: string) => {
       setSelectedCategories(prev =>
@@ -456,6 +486,7 @@ export default function App() {
             .filter(q => !activeCats || activeCats.includes(q.category))
             .sort(() => Math.random() - 0.5)
             .slice(0, 20);
+      setDrillLabel('');
 
       setQuizState({
         questions: pool,
@@ -490,13 +521,21 @@ export default function App() {
     const finishQuiz = () => {
       if (!quizState) return;
       const newProgress = { ...progress };
+      const bankRaw = localStorage.getItem('fbla_wrong_bank');
+      const bank: string[] = bankRaw ? JSON.parse(bankRaw) : [];
       quizState.questions.forEach((q, idx) => {
         const answer = quizState.answers[idx];
-        if (answer !== null) {
-          newProgress[q.category].total += 1;
-          if (answer === q.correctAnswer) newProgress[q.category].correct += 1;
+        if (answer === null) return;
+        newProgress[q.category].total += 1;
+        if (answer === q.correctAnswer) {
+          newProgress[q.category].correct += 1;
+          const pos = bank.indexOf(q.id);
+          if (pos !== -1) bank.splice(pos, 1); // graduated out of bank
+        } else {
+          if (!bank.includes(q.id)) bank.push(q.id); // add to bank
         }
       });
+      localStorage.setItem('fbla_wrong_bank', JSON.stringify(bank));
       setProgress(newProgress);
       setQuizState({ ...quizState, isFinished: true });
     };
@@ -519,6 +558,54 @@ export default function App() {
               </div>
               <Button className="w-full" onClick={() => startQuiz('full')}>Start Mock Exam</Button>
             </Card>
+
+            {/* Weak Areas Drill */}
+            {(() => {
+              const cats = getWeakCategories();
+              const bankRaw = localStorage.getItem('fbla_wrong_bank');
+              const bankCount = bankRaw ? JSON.parse(bankRaw).length : 0;
+              return (
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Card className="p-5 border-red-500/20 hover:border-red-500/40 transition-all">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2 bg-red-500/10 rounded-lg"><AlertCircle className="w-5 h-5 text-red-400" /></div>
+                      <div>
+                        <h3 className="font-bold text-slate-100">Weak Areas Drill</h3>
+                        <p className="text-xs text-slate-500">{cats.map(c => c.split(' ').pop()).join(' + ')}</p>
+                      </div>
+                    </div>
+                    <Button variant="danger" size="sm" className="w-full" onClick={startWeakDrill}>Drill Weakest</Button>
+                  </Card>
+                  <Card className={`p-5 transition-all ${bankCount > 0 ? 'border-yellow-500/20 hover:border-yellow-500/40' : 'border-slate-800 opacity-60'}`}>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2 bg-yellow-500/10 rounded-lg"><XCircle className="w-5 h-5 text-yellow-400" /></div>
+                      <div>
+                        <h3 className="font-bold text-slate-100">Wrong Answer Bank</h3>
+                        <p className="text-xs text-slate-500">{bankCount} question{bankCount !== 1 ? 's' : ''} saved</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      disabled={bankCount === 0}
+                      onClick={() => {
+                        const ids: string[] = JSON.parse(localStorage.getItem('fbla_wrong_bank') ?? '[]');
+                        const pool = STUDY_DATA.questions
+                          .filter(q => ids.includes(q.id))
+                          .sort(() => Math.random() - 0.5)
+                          .slice(0, 20);
+                        setDrillLabel(`Wrong Bank (${Math.min(pool.length, 20)} q)`);
+                        setQuizState({ questions: pool, currentIndex: 0, answers: new Array(pool.length).fill(null), isFinished: false, startTime: Date.now(), timeRemaining: 15 * 60 });
+                        setQuizType('drill');
+                      }}
+                    >
+                      {bankCount === 0 ? 'No questions yet' : 'Drill Bank'}
+                    </Button>
+                  </Card>
+                </div>
+              );
+            })()}
             <Card className="p-6 border-slate-800 hover:border-slate-700 transition-all">
               <div className="space-y-4">
                 <div>
@@ -562,70 +649,141 @@ export default function App() {
 
     if (quizState?.isFinished) {
       const score = quizState.answers.filter((a, i) => a === quizState.questions[i].correctAnswer).length;
-      const percentage = Math.round((score / quizState.questions.length) * 100);
-      const wrongQuestions = quizState.questions.filter((_, i) => quizState.answers[i] !== quizState.questions[i].correctAnswer);
+      const skipped = quizState.answers.filter(a => a === null).length;
+      const answered = quizState.questions.length - skipped;
+      const percentage = answered > 0 ? Math.round((score / quizState.questions.length) * 100) : 0;
+      const maxDuration = quizType === 'full' ? 50 * 60 : 15 * 60;
+      const elapsed = Math.min(Math.floor((Date.now() - quizState.startTime) / 1000), maxDuration);
+      const formatTime = (s: number) => `${Math.floor(s / 60)}m ${(s % 60).toString().padStart(2,'0')}s`;
+      const missedIds = quizState.questions
+        .filter((_, i) => quizState.answers[i] !== quizState.questions[i].correctAnswer)
+        .map(q => q.id);
 
-      // Per-category breakdown
+      // Per-category breakdown for this session
       const catBreakdown: Record<string, { correct: number; total: number }> = {};
       quizState.questions.forEach((q, i) => {
         if (!catBreakdown[q.category]) catBreakdown[q.category] = { correct: 0, total: 0 };
         catBreakdown[q.category].total++;
         if (quizState.answers[i] === q.correctAnswer) catBreakdown[q.category].correct++;
       });
-      const catEntries = Object.entries(catBreakdown).sort((a, b) => {
-        const accA = a[1].correct / a[1].total;
-        const accB = b[1].correct / b[1].total;
-        return accA - accB; // worst first
-      });
+      const catEntries = Object.entries(catBreakdown).sort((a, b) =>
+        (a[1].correct / a[1].total) - (b[1].correct / b[1].total)
+      );
+
+      // All-time accuracy per category (current progress state already includes this session)
+      const allTime = progress;
+
+      const drillMissed = () => {
+        if (missedIds.length === 0) return;
+        const pool = STUDY_DATA.questions
+          .filter(q => missedIds.includes(q.id))
+          .sort(() => Math.random() - 0.5);
+        setDrillLabel(`Missed Review (${pool.length} q)`);
+        setQuizState({
+          questions: pool,
+          currentIndex: 0,
+          answers: new Array(pool.length).fill(null),
+          isFinished: false,
+          startTime: Date.now(),
+          timeRemaining: 15 * 60,
+        });
+        setQuizType('drill');
+      };
 
       return (
-        <div className="max-w-3xl mx-auto py-8 px-4 space-y-8">
-          {/* Score circle */}
-          <Card className="p-8 text-center space-y-6">
-            <h2 className="text-3xl font-bold text-slate-100">Results</h2>
-            <div className="flex justify-center">
-              <div className="relative w-40 h-40">
+        <div className="max-w-3xl mx-auto py-8 px-4 space-y-6">
+
+          {/* Score + meta stats */}
+          <Card className="p-8">
+            <h2 className="text-2xl font-bold text-slate-100 text-center mb-6">Results</h2>
+            <div className="flex flex-col sm:flex-row items-center gap-8">
+              {/* Circle */}
+              <div className="relative w-36 h-36 shrink-0">
                 <svg className="w-full h-full -rotate-90">
-                  <circle cx="80" cy="80" r="68" fill="transparent" stroke="currentColor" strokeWidth="10" className="text-slate-800" />
-                  <circle
-                    cx="80" cy="80" r="68" fill="transparent" stroke="currentColor" strokeWidth="10"
-                    strokeDasharray={2 * Math.PI * 68}
-                    strokeDashoffset={2 * Math.PI * 68 * (1 - percentage / 100)}
-                    className={cn("transition-all duration-1000", percentage >= 70 ? "text-emerald-500" : percentage >= 50 ? "text-yellow-500" : "text-red-500")}
+                  <circle cx="72" cy="72" r="60" fill="transparent" stroke="currentColor" strokeWidth="10" className="text-slate-800" />
+                  <circle cx="72" cy="72" r="60" fill="transparent" stroke="currentColor" strokeWidth="10"
+                    strokeDasharray={2 * Math.PI * 60}
+                    strokeDashoffset={2 * Math.PI * 60 * (1 - percentage / 100)}
+                    className={cn("transition-all duration-1000",
+                      percentage >= 80 ? "text-emerald-500" : percentage >= 60 ? "text-yellow-500" : "text-red-500"
+                    )}
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-4xl font-bold text-slate-100">{percentage}%</span>
+                  <span className="text-3xl font-bold text-slate-100">{percentage}%</span>
                   <span className="text-xs text-slate-500 font-mono">{score}/{quizState.questions.length}</span>
                 </div>
               </div>
+              {/* Stats grid */}
+              <div className="grid grid-cols-2 gap-3 w-full text-center">
+                <div className="bg-slate-800/60 rounded-lg p-3">
+                  <div className="text-2xl font-bold text-emerald-400">{score}</div>
+                  <div className="text-[10px] text-slate-500 uppercase tracking-wider mt-0.5">Correct</div>
+                </div>
+                <div className="bg-slate-800/60 rounded-lg p-3">
+                  <div className="text-2xl font-bold text-red-400">{missedIds.length}</div>
+                  <div className="text-[10px] text-slate-500 uppercase tracking-wider mt-0.5">Missed</div>
+                </div>
+                <div className="bg-slate-800/60 rounded-lg p-3">
+                  <div className="text-2xl font-bold text-slate-300">{skipped}</div>
+                  <div className="text-[10px] text-slate-500 uppercase tracking-wider mt-0.5">Skipped</div>
+                </div>
+                <div className="bg-slate-800/60 rounded-lg p-3">
+                  <div className="text-lg font-bold text-blue-400 font-mono">{formatTime(elapsed)}</div>
+                  <div className="text-[10px] text-slate-500 uppercase tracking-wider mt-0.5">Time Taken</div>
+                </div>
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Button variant="secondary" onClick={() => setQuizType(null)}>Back to Menu</Button>
-              <Button onClick={() => startQuiz(quizType!)}>Retake</Button>
+            <div className="grid grid-cols-3 gap-3 mt-6">
+              <Button variant="secondary" onClick={() => setQuizType(null)}>Menu</Button>
+              <Button variant="outline" onClick={() => startQuiz(quizType!)}>Retake</Button>
+              <Button
+                variant="danger"
+                disabled={missedIds.length === 0}
+                onClick={drillMissed}
+              >
+                Drill Missed
+              </Button>
             </div>
           </Card>
 
-          {/* Category breakdown */}
+          {/* Category breakdown with all-time delta */}
           <Card className="p-6">
-            <h3 className="text-lg font-bold text-slate-100 mb-4">Performance by Category</h3>
-            <div className="space-y-3">
+            <h3 className="text-lg font-bold text-slate-100 mb-1">Performance by Category</h3>
+            <p className="text-xs text-slate-500 mb-4">Session score vs your all-time average</p>
+            <div className="space-y-4">
               {catEntries.map(([cat, data]) => {
-                const pct = Math.round((data.correct / data.total) * 100);
+                const sessionPct = Math.round((data.correct / data.total) * 100);
+                const allTimeData = allTime[cat];
+                const allTimePct = allTimeData && allTimeData.total > 0
+                  ? Math.round((allTimeData.correct / allTimeData.total) * 100)
+                  : null;
+                const delta = allTimePct !== null ? sessionPct - allTimePct : null;
                 return (
                   <div key={cat}>
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm text-slate-300">{cat}</span>
-                      <span className={cn("text-xs font-mono font-bold",
-                        pct >= 80 ? "text-emerald-400" : pct >= 60 ? "text-yellow-400" : "text-red-400"
-                      )}>{pct}% · {data.correct}/{data.total}</span>
+                    <div className="flex justify-between items-center mb-1 gap-2">
+                      <span className="text-sm text-slate-300 truncate">{cat}</span>
+                      <div className="flex items-center gap-2 shrink-0">
+                        {delta !== null && (
+                          <span className={cn("text-[10px] font-mono font-bold px-1.5 py-0.5 rounded",
+                            delta > 0 ? "text-emerald-400 bg-emerald-500/10" :
+                            delta < 0 ? "text-red-400 bg-red-500/10" :
+                            "text-slate-500 bg-slate-800"
+                          )}>
+                            {delta > 0 ? `+${delta}` : delta}% vs avg
+                          </span>
+                        )}
+                        <span className={cn("text-xs font-mono font-bold",
+                          sessionPct >= 80 ? "text-emerald-400" : sessionPct >= 60 ? "text-yellow-400" : "text-red-400"
+                        )}>{sessionPct}% · {data.correct}/{data.total}</span>
+                      </div>
                     </div>
                     <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
                       <div
                         className={cn("h-full rounded-full transition-all duration-700",
-                          pct >= 80 ? "bg-emerald-500" : pct >= 60 ? "bg-yellow-500" : "bg-red-500"
+                          sessionPct >= 80 ? "bg-emerald-500" : sessionPct >= 60 ? "bg-yellow-500" : "bg-red-500"
                         )}
-                        style={{ width: `${pct}%` }}
+                        style={{ width: `${sessionPct}%` }}
                       />
                     </div>
                   </div>
@@ -633,29 +791,37 @@ export default function App() {
               })}
             </div>
             <div className="mt-4 pt-4 border-t border-slate-800 grid grid-cols-3 gap-3 text-center text-xs text-slate-500">
-              <div><span className="block text-emerald-400 font-bold text-sm">{catEntries.filter(([,d]) => d.correct/d.total >= 0.8).length}</span>Strong areas</div>
-              <div><span className="block text-yellow-400 font-bold text-sm">{catEntries.filter(([,d]) => d.correct/d.total >= 0.6 && d.correct/d.total < 0.8).length}</span>Review needed</div>
-              <div><span className="block text-red-400 font-bold text-sm">{catEntries.filter(([,d]) => d.correct/d.total < 0.6).length}</span>Weak areas</div>
+              <div><span className="block text-emerald-400 font-bold text-sm">{catEntries.filter(([,d]) => d.correct/d.total >= 0.8).length}</span>Strong</div>
+              <div><span className="block text-yellow-400 font-bold text-sm">{catEntries.filter(([,d]) => { const p = d.correct/d.total; return p >= 0.6 && p < 0.8; }).length}</span>Review</div>
+              <div><span className="block text-red-400 font-bold text-sm">{catEntries.filter(([,d]) => d.correct/d.total < 0.6).length}</span>Weak</div>
             </div>
           </Card>
 
-          {/* Wrong questions only */}
-          {wrongQuestions.length > 0 && (
+          {/* Missed questions */}
+          {missedIds.length > 0 ? (
             <div className="space-y-4">
-              <h3 className="text-lg font-bold text-slate-100">
-                Missed Questions <span className="text-red-400 font-mono text-sm ml-2">{wrongQuestions.length}</span>
-              </h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold text-slate-100">
+                  Missed Questions <span className="text-red-400 font-mono text-sm ml-2">{missedIds.length}</span>
+                </h3>
+                <Button size="sm" variant="danger" onClick={drillMissed}>
+                  <RotateCcw className="w-3 h-3" /> Drill These
+                </Button>
+              </div>
               {quizState.questions.map((q, idx) => {
-                const isCorrect = quizState.answers[idx] === q.correctAnswer;
-                if (isCorrect) return null;
+                if (quizState.answers[idx] === q.correctAnswer) return null;
+                const wasSkipped = quizState.answers[idx] === null;
                 return (
-                  <Card key={q.id} className="p-5 border-l-4 border-l-red-500">
+                  <Card key={q.id} className={cn("p-5 border-l-4", wasSkipped ? "border-l-slate-600" : "border-l-red-500")}>
                     <div className="flex justify-between items-start gap-4 mb-3">
                       <div>
-                        <Badge className="mb-2 text-[9px]">{q.category}</Badge>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Badge className="text-[9px]">{q.category}</Badge>
+                          {wasSkipped && <Badge className="text-[9px] text-slate-400 border-slate-600">Skipped</Badge>}
+                        </div>
                         <p className="text-slate-200 font-medium text-sm">{idx + 1}. {q.question}</p>
                       </div>
-                      <XCircle className="w-5 h-5 text-red-500 shrink-0" />
+                      {wasSkipped ? <AlertCircle className="w-5 h-5 text-slate-500 shrink-0" /> : <XCircle className="w-5 h-5 text-red-500 shrink-0" />}
                     </div>
                     <div className="space-y-1.5 mb-3">
                       {q.options.map((opt, optIdx) => (
@@ -681,9 +847,7 @@ export default function App() {
                 );
               })}
             </div>
-          )}
-
-          {wrongQuestions.length === 0 && (
+          ) : (
             <Card className="p-6 text-center border-emerald-500/20">
               <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto mb-2" />
               <p className="text-emerald-400 font-bold">Perfect score — no missed questions!</p>
@@ -701,6 +865,7 @@ export default function App() {
         <div className="flex items-center justify-between bg-slate-900 p-4 rounded-lg border border-slate-800 sticky top-4 z-10 shadow-lg">
           <div className="flex items-center gap-4">
             <div className="text-slate-400 text-sm font-mono">Q {quizState!.currentIndex + 1}/{quizState!.questions.length}</div>
+            {drillLabel && <Badge className="text-yellow-400 border-yellow-500/30 bg-yellow-500/10 hidden sm:inline">{drillLabel}</Badge>}
             <Progress value={quizState!.currentIndex + 1} max={quizState!.questions.length} className="w-32 hidden sm:block" />
           </div>
           <div className={cn("flex items-center gap-2 font-mono font-bold px-3 py-1 rounded",
