@@ -38,6 +38,7 @@ interface QuizState {
   isFinished: boolean;
   startTime: number;
   timeRemaining: number;
+  reviewMode: boolean;
 }
 
 interface ProgressData {
@@ -444,6 +445,7 @@ export default function App() {
     const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
     const [quizState, setQuizState] = useState<QuizState | null>(null);
     const [drillLabel, setDrillLabel] = useState<string>('');
+    const [reviewMode, setReviewMode] = useState(true);
 
     // Weak areas: bottom 2 categories by accuracy (min 1 attempt), else fallback
     const getWeakCategories = (): string[] => {
@@ -470,6 +472,7 @@ export default function App() {
         isFinished: false,
         startTime: Date.now(),
         timeRemaining: 15 * 60,
+        reviewMode: true,
       });
       setQuizType('drill');
     };
@@ -497,6 +500,7 @@ export default function App() {
         isFinished: false,
         startTime: Date.now(),
         timeRemaining: type === 'full' ? 50 * 60 : 15 * 60,
+        reviewMode,
       });
       setQuizType(type);
     };
@@ -558,6 +562,25 @@ export default function App() {
                 </div>
                 <Badge className="bg-blue-900/30 text-blue-400 border-blue-500/30">Official Format</Badge>
               </div>
+              {/* Review mode toggle */}
+              <div className="flex items-center justify-between mb-4 p-3 bg-slate-800/50 rounded-lg">
+                <div>
+                  <p className="text-sm font-medium text-slate-300">Instant Feedback</p>
+                  <p className="text-xs text-slate-500">Show explanation after each answer</p>
+                </div>
+                <button
+                  onClick={() => setReviewMode(r => !r)}
+                  className={cn(
+                    "relative w-11 h-6 rounded-full transition-colors duration-200",
+                    reviewMode ? "bg-blue-600" : "bg-slate-700"
+                  )}
+                >
+                  <span className={cn(
+                    "absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200",
+                    reviewMode ? "translate-x-5" : "translate-x-0"
+                  )} />
+                </button>
+              </div>
               <Button className="w-full" onClick={() => startQuiz('full')}>Start Mock Exam</Button>
             </Card>
 
@@ -598,7 +621,7 @@ export default function App() {
                           .sort(() => Math.random() - 0.5)
                           .slice(0, 20);
                         setDrillLabel(`Wrong Bank (${Math.min(pool.length, 20)} q)`);
-                        setQuizState({ questions: pool, currentIndex: 0, answers: new Array(pool.length).fill(null), isFinished: false, startTime: Date.now(), timeRemaining: 15 * 60 });
+                        setQuizState({ questions: pool, currentIndex: 0, answers: new Array(pool.length).fill(null), isFinished: false, startTime: Date.now(), timeRemaining: 15 * 60, reviewMode: true });
                         setQuizType('drill');
                       }}
                     >
@@ -688,6 +711,7 @@ export default function App() {
           isFinished: false,
           startTime: Date.now(),
           timeRemaining: 15 * 60,
+          reviewMode: true,
         });
         setQuizType('drill');
       };
@@ -929,6 +953,44 @@ export default function App() {
     );
   };
 
+  const exportData = () => {
+    const payload = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      progress: JSON.parse(localStorage.getItem('fbla_cyber_progress') ?? '{}'),
+      wrongBank: JSON.parse(localStorage.getItem('fbla_wrong_bank') ?? '[]'),
+      fcKnown: JSON.parse(localStorage.getItem('fbla_fc_known') ?? '[]'),
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `fbla-cyber-backup-${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const importData = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target?.result as string);
+        if (!data.version || !data.progress) throw new Error('Invalid file');
+        localStorage.setItem('fbla_cyber_progress', JSON.stringify(data.progress));
+        if (data.wrongBank) localStorage.setItem('fbla_wrong_bank', JSON.stringify(data.wrongBank));
+        if (data.fcKnown) localStorage.setItem('fbla_fc_known', JSON.stringify(data.fcKnown));
+        setProgress(data.progress);
+        alert('Import successful!');
+      } catch {
+        alert('Invalid backup file.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
   const ProgressView = () => {
     const chartData = (Object.entries(progress) as [string, { total: number; correct: number }][]).map(([name, data]) => ({
       name: name.split(' ').map(w => w[0]).join(''), // Initials for mobile
@@ -948,13 +1010,24 @@ export default function App() {
       <div className="max-w-4xl mx-auto py-8 px-4 space-y-8">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold text-slate-100">Progress Tracker</h2>
-          <Button variant="outline" size="sm" onClick={() => {
-            if (confirm('Reset all progress?')) {
-              const initial: ProgressData = {};
-              Object.values(CATEGORIES).forEach(cat => initial[cat] = { total: 0, correct: 0 });
-              setProgress(initial);
-            }
-          }}><RotateCcw className="w-4 h-4" /> Reset</Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={exportData}>
+              <Download className="w-4 h-4" /> Export
+            </Button>
+            <label className="cursor-pointer">
+              <input type="file" accept=".json" className="hidden" onChange={importData} />
+              <span className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-md font-medium border border-slate-700 hover:bg-slate-800 text-slate-300 transition-all">
+                <Upload className="w-4 h-4" /> Import
+              </span>
+            </label>
+            <Button variant="outline" size="sm" onClick={() => {
+              if (confirm('Reset all progress?')) {
+                const initial: ProgressData = {};
+                Object.values(CATEGORIES).forEach(cat => initial[cat] = { total: 0, correct: 0 });
+                setProgress(initial);
+              }
+            }}><RotateCcw className="w-4 h-4" /> Reset</Button>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
