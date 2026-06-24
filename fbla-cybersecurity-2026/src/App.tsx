@@ -33,6 +33,7 @@ type QuizType = 'full' | 'drill';
 
 interface QuizState {
   questions: Question[];
+  shuffledOptions: number[][]; // per-question: maps display index -> original index
   currentIndex: number;
   answers: (number | null)[];
   isFinished: boolean;
@@ -46,6 +47,22 @@ interface ProgressData {
     total: number;
     correct: number;
   };
+}
+
+// Utility: Fisher-Yates shuffle
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// Build shuffled option mapping for a question: returns array where shuffled[i] = originalIndex
+function shuffleOptions(q: Question): number[] {
+  const indices = [0, 1, 2, 3];
+  return shuffle(indices);
 }
 
 // --- Components ---
@@ -158,6 +175,23 @@ export default function App() {
     const secs = timeLeft % 60;
     const pad = (n: number) => n.toString().padStart(2, '0');
 
+    // Streak tracking
+    const [streak, setStreak] = useState<number>(() => {
+      return parseInt(localStorage.getItem('fbla_streak') || '0', 10);
+    });
+    const [bestStreak, setBestStreak] = useState<number>(() => {
+      return parseInt(localStorage.getItem('fbla_best_streak') || '0', 10);
+    });
+
+    const saveStreak = (newStreak: number) => {
+      setStreak(newStreak);
+      localStorage.setItem('fbla_streak', String(newStreak));
+      if (newStreak > bestStreak) {
+        setBestStreak(newStreak);
+        localStorage.setItem('fbla_best_streak', String(newStreak));
+      }
+    };
+
     return (
     <div className="space-y-8 max-w-4xl mx-auto py-8 px-4">
       <header className="text-center space-y-4">
@@ -174,6 +208,11 @@ export default function App() {
         <p className="text-slate-400 text-lg max-w-2xl mx-auto">
           Nationals · San Antonio · 100 questions · 50 minutes
         </p>
+        {streak > 0 && (
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-sm font-bold">
+            🔥 {streak} correct in a row · Best: {bestStreak}
+          </div>
+        )}
       </header>
 
       {/* Nationals countdown */}
@@ -449,7 +488,7 @@ export default function App() {
 
     // Weak areas: bottom 2 categories by accuracy (min 1 attempt), else fallback
     const getWeakCategories = (): string[] => {
-      const entries = Object.entries(progress)
+      const entries = (Object.entries(progress) as [string, { total: number; correct: number }][])
         .filter(([, d]) => d.total > 0)
         .sort((a, b) => (a[1].correct / a[1].total) - (b[1].correct / b[1].total));
       if (entries.length >= 2) return entries.slice(0, 2).map(([cat]) => cat);
@@ -467,6 +506,7 @@ export default function App() {
         .slice(0, 20);
       setQuizState({
         questions: pool,
+        shuffledOptions: pool.map(q => shuffleOptions(q)),
         currentIndex: 0,
         answers: new Array(pool.length).fill(null),
         isFinished: false,
@@ -495,6 +535,7 @@ export default function App() {
 
       setQuizState({
         questions: pool,
+        shuffledOptions: pool.map(q => shuffleOptions(q)),
         currentIndex: 0,
         answers: new Array(pool.length).fill(null),
         isFinished: false,
@@ -517,10 +558,12 @@ export default function App() {
       return () => clearInterval(timer);
     }, [quizState?.isFinished]);
 
-    const handleAnswer = (optionIndex: number) => {
+    const handleAnswer = (displayIndex: number) => {
       if (!quizState) return;
       const newAnswers = [...quizState.answers];
-      newAnswers[quizState.currentIndex] = optionIndex;
+      // Map display index to original option index using the shuffled mapping
+      const originalIndex = quizState.shuffledOptions[quizState.currentIndex][displayIndex];
+      newAnswers[quizState.currentIndex] = originalIndex;
       setQuizState({ ...quizState, answers: newAnswers });
     };
 
@@ -529,19 +572,32 @@ export default function App() {
       const newProgress = { ...progress };
       const bankRaw = localStorage.getItem('fbla_wrong_bank');
       const bank: string[] = bankRaw ? JSON.parse(bankRaw) : [];
+      let currentStreak = 0;
+      let maxStreak = 0;
       quizState.questions.forEach((q, idx) => {
         const answer = quizState.answers[idx];
         if (answer === null) return;
         newProgress[q.category].total += 1;
         if (answer === q.correctAnswer) {
           newProgress[q.category].correct += 1;
+          currentStreak++;
+          if (currentStreak > maxStreak) maxStreak = currentStreak;
           const pos = bank.indexOf(q.id);
           if (pos !== -1) bank.splice(pos, 1); // graduated out of bank
         } else {
+          currentStreak = 0; // reset streak on wrong answer
           if (!bank.includes(q.id)) bank.push(q.id); // add to bank
         }
       });
       localStorage.setItem('fbla_wrong_bank', JSON.stringify(bank));
+      
+      // Update streak
+      const bestStreak = parseInt(localStorage.getItem('fbla_best_streak') || '0', 10);
+      localStorage.setItem('fbla_streak', String(currentStreak));
+      if (maxStreak > bestStreak) {
+        localStorage.setItem('fbla_best_streak', String(maxStreak));
+      }
+      
       setProgress(newProgress);
       setQuizState({ ...quizState, isFinished: true });
     };
@@ -621,7 +677,7 @@ export default function App() {
                           .sort(() => Math.random() - 0.5)
                           .slice(0, 20);
                         setDrillLabel(`Wrong Bank (${Math.min(pool.length, 20)} q)`);
-                        setQuizState({ questions: pool, currentIndex: 0, answers: new Array(pool.length).fill(null), isFinished: false, startTime: Date.now(), timeRemaining: 15 * 60, reviewMode: true });
+                        setQuizState({ questions: pool, shuffledOptions: pool.map(q => shuffleOptions(q)), currentIndex: 0, answers: new Array(pool.length).fill(null), isFinished: false, startTime: Date.now(), timeRemaining: 15 * 60, reviewMode: true });
                         setQuizType('drill');
                       }}
                     >
@@ -679,6 +735,18 @@ export default function App() {
       const percentage = answered > 0 ? Math.round((score / quizState.questions.length) * 100) : 0;
       const maxDuration = quizType === 'full' ? 50 * 60 : 15 * 60;
       const elapsed = Math.min(Math.floor((Date.now() - quizState.startTime) / 1000), maxDuration);
+      
+      // Calculate streak for this session
+      let sessionStreak = 0, maxSessionStreak = 0;
+      quizState.answers.forEach((a, i) => {
+        if (a === null) return;
+        if (a === quizState.questions[i].correctAnswer) {
+          sessionStreak++;
+          if (sessionStreak > maxSessionStreak) maxSessionStreak = sessionStreak;
+        } else {
+          sessionStreak = 0;
+        }
+      });
       const formatTime = (s: number) => `${Math.floor(s / 60)}m ${(s % 60).toString().padStart(2,'0')}s`;
       const missedIds = quizState.questions
         .filter((_, i) => quizState.answers[i] !== quizState.questions[i].correctAnswer)
@@ -706,6 +774,7 @@ export default function App() {
         setDrillLabel(`Missed Review (${pool.length} q)`);
         setQuizState({
           questions: pool,
+          shuffledOptions: pool.map(q => shuffleOptions(q)),
           currentIndex: 0,
           answers: new Array(pool.length).fill(null),
           isFinished: false,
@@ -751,8 +820,8 @@ export default function App() {
                   <div className="text-[10px] text-slate-500 uppercase tracking-wider mt-0.5">Missed</div>
                 </div>
                 <div className="bg-slate-800/60 rounded-lg p-3">
-                  <div className="text-2xl font-bold text-slate-300">{skipped}</div>
-                  <div className="text-[10px] text-slate-500 uppercase tracking-wider mt-0.5">Skipped</div>
+                  <div className="text-2xl font-bold text-amber-400">🔥 {maxSessionStreak}</div>
+                  <div className="text-[10px] text-slate-500 uppercase tracking-wider mt-0.5">Best Streak</div>
                 </div>
                 <div className="bg-slate-800/60 rounded-lg p-3">
                   <div className="text-lg font-bold text-blue-400 font-mono">{formatTime(elapsed)}</div>
@@ -884,6 +953,7 @@ export default function App() {
     }
 
     const currentQuestion = quizState!.questions[quizState!.currentIndex];
+    const currentShuffle = quizState!.shuffledOptions[quizState!.currentIndex];
     const formatTime = (seconds: number) => `${Math.floor(seconds / 60)}:${(seconds % 60).toString().padStart(2, '0')}`;
 
     return (
@@ -911,26 +981,31 @@ export default function App() {
                 <h3 className="text-xl font-bold text-slate-100 leading-snug">{currentQuestion.question}</h3>
               </div>
               <div className="grid gap-3">
-                {currentQuestion.options.map((option, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handleAnswer(idx)}
-                    className={cn(
-                      "w-full text-left p-4 rounded-lg border transition-all duration-200 flex items-center gap-4 group",
-                      quizState!.answers[quizState!.currentIndex] === idx
-                        ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/20"
-                        : "bg-slate-800/50 border-slate-700 text-slate-300 hover:border-slate-500 hover:bg-slate-800"
-                    )}
-                  >
-                    <div className={cn(
-                      "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0",
-                      quizState!.answers[quizState!.currentIndex] === idx ? "bg-white/20 text-white" : "bg-slate-700 text-slate-400 group-hover:bg-slate-600"
-                    )}>
-                      {String.fromCharCode(65 + idx)}
-                    </div>
-                    {option}
-                  </button>
-                ))}
+                {currentShuffle.map((originalIdx, displayIdx) => {
+                  const option = currentQuestion.options[originalIdx];
+                  const selectedOriginal = quizState!.answers[quizState!.currentIndex];
+                  const isSelected = selectedOriginal === originalIdx;
+                  return (
+                    <button
+                      key={displayIdx}
+                      onClick={() => handleAnswer(displayIdx)}
+                      className={cn(
+                        "w-full text-left p-4 rounded-lg border transition-all duration-200 flex items-center gap-4 group",
+                        isSelected
+                          ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/20"
+                          : "bg-slate-800/50 border-slate-700 text-slate-300 hover:border-slate-500 hover:bg-slate-800"
+                      )}
+                    >
+                      <div className={cn(
+                        "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0",
+                        isSelected ? "bg-white/20 text-white" : "bg-slate-700 text-slate-400 group-hover:bg-slate-600"
+                      )}>
+                        {String.fromCharCode(65 + displayIdx)}
+                      </div>
+                      {option}
+                    </button>
+                  );
+                })}
               </div>
             </Card>
           </motion.div>
