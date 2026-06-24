@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FBLA Cybersecurity — 5-Day NLC Study Plan</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0f1117;--surface:#1a1d27;--surface2:#242836;--border:#2e3348;--text:#e8eaf6;--text2:#9ca3b8;--text3:#6b7280;--accent:#3b82f6;--accent-bg:rgba(59,130,246,.1);--success:#22c55e;--danger:#ef4444;--warning:#f59e0b}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);padding:1rem;max-width:800px;margin:0 auto;line-height:1.6}
+h1{font-size:2rem;margin-bottom:.5rem}
+h2{font-size:1.25rem;margin:1.5rem 0 .75rem;color:var(--accent)}
+h3{font-size:1rem;margin:1rem 0 .5rem;color:var(--text2)}
+.countdown{text-align:center;padding:1.5rem;background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:1.5rem}
+.countdown .digits{font-size:2.5rem;font-weight:700;font-variant-numeric:tabular-nums;color:var(--warning)}
+.countdown .labels{display:flex;justify-content:center;gap:1.5rem;margin-top:.5rem;font-size:.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px}
+.topic-bar{display:flex;align-items:center;gap:10px;padding:.5rem 0;border-bottom:1px solid var(--border)}
+.topic-name{width:120px;font-size:.8rem;font-weight:500;flex-shrink:0}
+.bar-wrap{flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .3s}
+.bar-pct{font-size:.75rem;width:40px;text-align:right;color:var(--text3)}
+.day-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+.day-card.today{border-color:var(--accent);box-shadow:0 0 20px rgba(59,130,246,.15)}
+.day-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem}
+.day-title{font-weight:600;font-size:1rem}
+.day-badge{font-size:.65rem;padding:2px 8px;border-radius:10px;background:var(--accent-bg);color:var(--accent);font-weight:600}
+.task-list{list-style:none;padding:0}
+.task-list li{display:flex;align-items:flex-start;gap:10px;padding:.4rem 0;font-size:.9rem;border-bottom:1px solid var(--border)}
+.task-list li:last-child{border-bottom:none}
+.task-icon{flex-shrink:0;width:18px;text-align:center;margin-top:1px}
+.task-text{flex:1}
+.task-time{font-size:.7rem;color:var(--text3);flex-shrink:0}
+.priority-high{color:var(--danger)}
+.priority-med{color:var(--warning)}
+.priority-low{color:var(--success)}
+.tip-box{background:var(--surface2);border-left:3px solid var(--warning);padding:.75rem 1rem;margin:.75rem 0;border-radius:0 8px 8px 0;font-size:.85rem;color:var(--text2)}
+.code-block{background:var(--surface2);padding:.5rem .75rem;border-radius:6px;font-family:monospace;font-size:.8rem;margin:.25rem 0;overflow-x:auto}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.5rem}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:.75rem;text-align:center}
+.stat-num{font-size:1.5rem;font-weight:600}
+.stat-lbl{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+@media(max-width:480px){.stats-grid{grid-template-columns:repeat(2,1fr)}.topic-name{width:90px}}
+</style>
+</head>
+<body>
+
+<h1>🛡️ FBLA Cybersecurity — 5-Day NLC Study Plan</h1>
+
+<div class="countdown">
+  <div class="digits" id="countdown">05:15:12</div>
+  <div class="labels"><span>Days</span><span>Hours</span><span>Minutes</span></div>
+</div>
+
+<div class="stats-grid">
+  <div class="stat"><div class="stat-num" style="color:var(--text)">523</div><div class="stat-lbl">Questions</div></div>
+  <div class="stat"><div class="stat-num" style="color:var(--text)">6</div><div class="stat-lbl">Topics</div></div>
+  <div class="stat"><div class="stat-num" style="color:var(--accent)">5</div><div class="stat-lbl">Days</div></div>
+</div>
+
+<h2>Topic Coverage Map</h2>
+<p style="font-size:.8rem;color:var(--text3);margin-bottom:1rem">Based on your 523-question bank. Focus your weak areas first.</p>
+
+<div class="topic-bar"><span class="topic-name">Fundamentals</span><div class="bar-wrap"><div class="bar-fill" style="width:100%;background:var(--success)"></div></div><span class="bar-pct">156</span></div>
+<div class="topic-bar"><span class="topic-name">Operations</span><div class="bar-wrap"><div class="bar-fill" style="width:81%;background:var(--warning)"></div></div><span class="bar-pct">127</span></div>
+<div class="topic-bar"><span class="topic-name">Network/Crypto</span><div class="bar-wrap"><div class="bar-fill" style="width:63%;background:var(--warning)"></div></div><span class="bar-pct">98</span></div>
+<div class="topic-bar"><span class="topic-name">Design</span><div class="bar-wrap"><div class="bar-fill" style="width:50%;background:var(--danger)"></div></div><span class="bar-pct">78</span></div>
+<div class="topic-bar"><span class="topic-name">Threats</span><div class="bar-wrap"><div class="bar-fill" style="width:24%;background:var(--danger)"></div></div><span class="bar-pct">37</span></div>
+<div class="topic-bar"><span class="topic-name">Mitigation</span><div class="bar-wrap"><div class="bar-fill" style="width:17%;background:var(--danger)"></div></div><span class="bar-pct">27</span></div>
+
+<h2>📅 Daily Battle Plan</h2>
+
+<div class="day-card today">
+<div class="day-header"><span class="day-title">Day 1 — Tuesday (Foundation Sprint)</span><span class="day-badge">TODAY</span></div>
+<ul class="task-list">
+<li><span class="task-icon priority-high">⚡</span><span class="task-text"><strong>CIA Triad & AAA Framework</strong> — Re-read the cheat sheet. Focus on the difference between Authentication, Authorization, and Accounting.</span><span class="task-time">45m</span></li>
+<li><span class="task-icon priority-high">⚡</span><span class="task-text"><strong>Cryptography Deep Dive</strong> — Symmetric vs Asymmetric, hashing vs encryption, PKI, digital signatures. Use flashcards for 30 cards in this topic.</span><span class="task-time">60m</span></li>
+<li><span class="task-icon priority-med">📝</span><span class="task-text"><strong>Quiz Drill</strong> — Run a 30-question quiz on "Network and Data Security" category. Review every wrong answer.</span><span class="task-time">45m</span></li>
+<li><span class="task-icon priority-med">📝</span><span class="task-text"><strong>Port Numbers</strong> — Memorize: 22(SSH), 53(DNS), 80(HTTP), 443(HTTPS), 110(POP3), 139(NetBIOS), 1723(PPTP), 3389(RDP), 587(SMTP sub), 993(IMAPS), 995(POP3S)</span><span class="task-time">20m</span></li>
+<li><span class="task-icon priority-low">🃏</span><span class="task-text"><strong>Flashcards</strong> — 20 cards from weak topics.</span><span class="task-time">30m</span></li>
+</ul>
+<div class="tip-box">💡 <strong>Key focus:</strong> The NLC loves asking "Which statement is TRUE/FALSE about encryption vs hashing." Know that AES-GCM provides BOTH confidentiality AND integrity. Know that hashing is ONE-WAY.</div>
+<div style="margin-top:.5rem;font-size:.75rem;color:var(--text3)">Total today: ~3.5 hrs</div>
+</div>
+
+<div class="day-card">
+<div class="day-header"><span class="day-title">Day 2 — Wednesday (Operations + Risk)</span></div>
+<ul class="task-list">
+<li><span class="task-icon priority-high">⚡</span><span class="task-text"><strong>Incident Response Lifecycle</strong> — NIST SP 800-61 phases: Preparation → Detection & Analysis → Containment/Eradication/Recovery → Post-Incident. Know the order cold.</span><span class="task-time">45m</span></li>
+<li><span class="task-icon priority-high">⚡</span><span class="task-text"><strong>DR/BCP Mastery</strong> — RPO vs RTO (RPO = data loss tolerance, RTO = downtime tolerance). Hot/Warm/Cold site RTOs. BCP covers ALL business functions; DRP covers only IT.</span><span class="task-time">60m</span></li>
+<li><span class="task-icon priority-med">📝</span><span class="task-text"><strong>Risk Management Math</strong> — SLE = AV × EF, ALE = SLE × ARO. Know Accept/Avoid/Mitigate/Transfer. Quantitative vs Qualitative.</span><span class="task-time">30m</span></li>
+<li><span class="task-icon priority-med">📝</span><span class="task-text"><strong>Quiz Drill</strong> — 30 questions from "Security Operations and Management." Focus on firewall types, ACLs, SIEM.</span><span class="task-time">45m</span></li>
+<li><span class="task-icon priority-low">🃏</span><span class="task-text"><strong>Forensics Drill</strong> — Order of Volatility, dd command, fsck, chain of custody.</span><span class="task-time">30m</span></li>
+</ul>
+<div class="tip-box">💡 <strong>NLC trick:</strong> They often say "RPO measures downtime" — that's FALSE. RPO measures DATA LOSS. RTO measures DOWNTIME. Mixing these up is their #1 trap.</div>
+<div style="margin-top:.5rem;font-size:.75rem;color:var(--text3)">Total today: ~3.5 hrs</div>
+</div>
+
+<div class="day-card">
+<div class="day-header"><span class="day-title">Day 3 — Thursday (Design + Threats)</span></div>
+<ul class="task-list">
+<li><span class="task-icon priority-high">⚡</span><span class="task-text"><strong>RAID Levels</strong> — RAID 0 = striping (no redundancy), RAID 1 = mirroring, RAID 5 = striping + distributed parity (min 3 disks, survives 1 failure), RAID 10 = striping + mirroring (min 4 disks).</span><span class="task-time">30m</span></li>
+<li><span class="task-icon priority-high">⚡</span><span class="task-text"><strong>Cloud Models</strong> — IaaS (most control, you manage OS+), PaaS (provider manages OS, you manage app+data), SaaS (provider manages all). Know examples of each.</span><span class="task-time">30m</span></li>
+<li><span class="task-icon priority-med">📝</span><span class="task-text"><strong>TCSEC Rainbow Series</strong> — Orange Book = TCSEC (rated D/C1/C2/B1/B2/B3/A1). Red Book = Network Security. Green Book = Password Management. Know what A1 means (verified design).</span><span class="task-time">40m</span></li>
+<li><span class="task-icon priority-med">📝</span><span class="task-text"><strong>IoT Security</strong> — Default credentials, limited hardware, inability to patch, no auto-update. Know mantraps/Faraday cages for physical security.</span><span class="task-time">25m</span></li>
+<li><span class="task-icon priority-high">📝</span><span class="task-text"><strong>Full Mock Exam #1</strong> — 100 questions, 50 minutes. Score yourself brutally.</span><span class="task-time">55m</span></li>
+<li><span class="task-icon priority-low">📝</span><span class="task-text"><strong>Review Missed Questions</strong> — Go through every wrong answer. Read the explanation.</span><span class="task-time">45m</span></li>
+</ul>
+<div class="tip-box">💡 <strong>High-yield:</strong> The NLC tests RAID 5 description ("striping with distributed parity") and cloud model distinctions constantly. Don't skip these.</div>
+<div style="margin-top:.5rem;font-size:.75rem;color:var(--text3)">Total today: ~4 hrs</div>
+</div>
+
+<div class="day-card">
+<div class="day-header"><span class="day-title">Day 4 — Friday (Laws + Mitigation + Full Review)</span></div>
+<ul class="task-list">
+<li><span class="task-icon priority-high">⚡</span><span class="task-text"><strong>Laws & Compliance</strong> — HIPAA (healthcare PHI), FERPA (student records), COPPA (children under 13), GDPR (4% global revenue fines), SOX (financial reporting), PCI DSS (cardholder data), CFAA (unauthorized access). Know which protects what.</span><span class="task-time">45m</span></li>
+<li><span class="task-icon priority-high">⚡</span><span class="task-text"><strong>TCSEC Deeper Dive</strong> — ITSEC (E0-E6), Common Criteria (EAL1-EAL7). What replaced what. Orange Book = TCSEC. Order: C1 → C2 → B1 → B2 → B3 → A1 (increasing security).</span><span class="task-time">40m</span></li>
+<li><span class="task-icon priority-med">📝</span><span class="task-text"><strong>Historical Malware</strong> — Morris Worm (1988, sendmail+fingerd), Melissa (1999, macro), ILOVEYOU (2000, VBScript), Code Red (2001, IIS), Nimda (2001, multi-vector), MyDoom (2004, fastest email worm), Storm (2007, P2P botnet).</span><span class="task-time">35m</span></li>
+<li><span class="task-icon priority-med">📝</span><span class="task-text"><strong>IDS vs IPS vs Firewall vs WAF</strong> — IDS = detect + alert, IPS = detect + block, WAF = Layer 7 web app protection, firewall = Layers 3-4 packet filtering.</span><span class="task-time">25m</span></li>
+<li><span class="task-icon priority-high">📝</span><span class="task-text"><strong>Full Mock Exam #2</strong> — 100 questions, 50 minutes. Target: 85%+.</span><span class="task-time">55m</span></li>
+<li><span class="task-icon priority-low">🃏</span><span class="task-text"><strong>Flashcard Blitz</strong> — 50 cards from all categories.</span><span class="task-time">30m</span></li>
+</ul>
+<div class="tip-box">💡 <strong>NLC trap:</strong> They'll phrase laws as "Which of the following BEST describes..." and give you two partially correct answers. COPPA is about children under 13 (not 16). FERPA protects student records (not just grades — ALL records).</div>
+<div style="margin-top:.5rem;font-size:.75rem;color:var(--text3)">Total today: ~4 hrs</div>
+</div>
+
+<div class="day-card">
+<div class="day-header"><span class="day-title">Day 5 — Saturday (Final Sprint)</span></div>
+<ul class="task-list">
+<li><span class="task-icon priority-high">📝</span><span class="task-text"><strong>Full Mock Exam #3</strong> — 100 questions, 50 minutes. conditions: no phone, timed strictly.</span><span class="task-time">55m</span></li>
+<li><span class="task-icon priority-med">📝</span><span class="task-text"><strong>Weak Areas Only</strong> — Run targeted 20-question drills on whichever categories scored lowest.</span><span class="task-time">60m</span></li>
+<li><span class="task-icon priority-med">📝</span><span class="task-text"><strong>Wrong Answer Bank Review</strong> — Every question you've ever gotten wrong. Re-run them until you get 100%.</span><span class="task-time">60m</span></li>
+<li><span class="task-icon priority-low">🃏</span><span class="task-text"><strong>Cheat Sheet Review</strong> — Read the reference sheet one more time. Focus on port numbers, RAID levels, laws.</span><span class="task-time">30m</span></li>
+<li><span class="task-icon priority-low">🧠</span><span class="task-text"><strong>Mental Prep</strong> — Review your best streak. You've done 523 questions. You're ready.</span><span class="task-time">15m</span></li>
+</ul>
+<div class="tip-box">💡 <strong>Day-of-test tip:</strong> The NLC test is known for having some typos and ambiguous wording. If two answers seem correct, pick the MOST SPECIFIC one. Eliminate obviously wrong answers first, then choose the "best" remaining option.</div>
+<div style="margin-top:.5rem;font-size:.75rem;color:var(--text3)">Total today: ~3.5 hrs</div>
+</div>
+
+<h2>🔥 Daily Non-Negotiables</h2>
+<ul style="font-size:.9rem;padding-left:1.25rem">
+<li>Do at least <strong>50 questions per day</strong> (mix of quiz + flashcards)</li>
+<li>Review <strong>every wrong answer</strong> before moving on</li>
+<li>Hit your <strong>streak record</strong> — try to beat your best every day</li>
+<li>If you score below 70% on a drill, <strong>repeat the category</strong> the next morning</li>
+</ul>
+
+<h2>📊 Your Target Score Breakdown</h2>
+<div class="code-block">
+Goal: 85/100 (85%) on NLC test
+
+Per-area target based on FBLA NLC weighting:
+  Security Fundamentals    ~25 questions → aim 22/25 (88%)
+  Network & Data Security ~25 questions → aim 22/25 (88%)
+  Security Operations       ~25 questions → aim 21/25 (84%)
+  Security and Design       ~15 questions → aim 12/15 (80%)
+  Threats & Attacks         ~10 questions → aim  8/10 (80%)
+                           ─────────────────
+                           Total goal: 85/100
+</div>
+
+<h2>⏰ Quick Reference — Know These Cold</h2>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;font-size:.85rem">
+<div class="code-block">
+<strong>Ports</strong><br>
+22 SSH &nbsp; 53 DNS &nbsp; 80 HTTP<br>
+443 HTTPS &nbsp; 110 POP3 &nbsp; 139 NetBIOS<br>
+1723 PPTP &nbsp; 3389 RDP &nbsp; 587 Submission<br>
+993 IMAPS &nbsp; 995 POP3S &nbsp; 445 SMB<br>
+389 LDAP &nbsp; 636 LDAPS &nbsp; 88 Kerberos
+</div>
+<div class="code-block">
+<strong>RAID</strong><br>
+0 = Striping (no redundancy)<br>
+1 = Mirroring (2+ disks)<br>
+5 = Striping + parity (3+ disks)<br>
+10 = Stripe + Mirror (4+ disks)<br><br>
+<strong>Cloud</strong><br>
+IaaS = most control<br>
+PaaS = you manage app<br>
+SaaS = provider manages all
+</div>
+<div class="code-block">
+<strong>Risk Formulas</strong><br>
+SLE = AV × EF<br>
+ALE = SLE × ARO<br><br>
+<strong>IR Lifecycle</strong><br>
+Prepare → Detect → Contain<br>
+→ Eradicate → Recover → Lessons
+</div>
+<div class="code-block">
+<strong>Access Control</strong><br>
+MAC = system labels<br>
+DAC = owner discretion<br>
+RBAC = by job role<br>
+ABAC = by attributes<br><br>
+<strong>Firewalls</strong><br>
+IDS = detect + alert<br>
+IPS = detect + block<br>
+WAF = Layer 7 protection
+</div>
+</div>
+
+<script>
+function updateCountdown(){
+  const target = new Date('2026-06-30T10:00:00-05:00');
+  const now = new Date();
+  let diff = Math.max(0, Math.floor((target - now)/1000));
+  const d = Math.floor(diff/86400); diff -= d*86400;
+  const h = Math.floor(diff/3600); diff -= h*3600;
+  const m = Math.floor(diff/60); diff -= m*60;
+  const pad = n => n.toString().padStart(2,'0');
+  document.getElementById('countdown').textContent = `${pad(d)}:${pad(h)}:${pad(m)}`;
+}
+updateCountdown();
+setInterval(updateCountdown, 60000);
+</script>
+
+</body>
+</html>
