@@ -654,25 +654,34 @@ export default function App() {
 
     // Separate timer state to avoid re-rendering the entire quiz every second
     const [timerDisplay, setTimerDisplay] = useState(0);
+    const timerRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
     
+    // Start timer when quiz begins, stop when finished
     useEffect(() => {
       if (!quizState || quizState.isFinished) return;
+      // Initialize display from quiz state
       setTimerDisplay(quizState.timeRemaining);
-      const timer = setInterval(() => {
+      // Clear any existing timer
+      if (timerRef.current) clearInterval(timerRef.current);
+      // Start countdown
+      timerRef.current = setInterval(() => {
         setTimerDisplay(prev => {
-          if (prev <= 0) {
-            clearInterval(timer);
+          if (prev <= 1) {
+            if (timerRef.current) clearInterval(timerRef.current);
             return 0;
           }
           return prev - 1;
         });
       }, 1000);
-      return () => clearInterval(timer);
-    }, [quizState?.isFinished, quizState?.timeRemaining === undefined]);
+      return () => {
+        if (timerRef.current) clearInterval(timerRef.current);
+      };
+    }, [quizState?.isFinished]);
 
     // Auto-finish when timer hits 0
     useEffect(() => {
-      if (timerDisplay <= 0 && quizState && !quizState.isFinished) {
+      if (timerDisplay === 0 && quizState && !quizState.isFinished) {
+        if (timerRef.current) clearInterval(timerRef.current);
         setQuizState(prev => prev ? { ...prev, isFinished: true } : null);
       }
     }, [timerDisplay]);
@@ -1151,7 +1160,7 @@ export default function App() {
             <Progress value={quizState!.currentIndex + 1} max={quizState!.questions.length} className="w-32 hidden sm:block" />
           </div>
           <div className={cn("flex items-center gap-2 font-mono font-bold px-3 py-1 rounded",
-            quizState!.timeRemaining < 60 ? "text-red-500 animate-pulse" : "text-blue-400"
+            timerDisplay < 60 ? "text-red-500 animate-pulse" : "text-blue-400"
           )}>
             <Clock className="w-4 h-4" />
             {formatTime(timerDisplay)}
