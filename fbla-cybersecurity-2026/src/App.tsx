@@ -29,7 +29,7 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recha
 // --- Types ---
 
 type AppMode = 'home' | 'flashcards' | 'quiz' | 'progress' | 'cheat-sheet';
-type QuizType = 'full' | 'drill';
+type QuizType = 'full' | 'drill' | 'speed' | 'cram';
 
 interface QuizState {
   questions: Question[];
@@ -141,6 +141,11 @@ const Badge = ({ children, className, id }: { children: React.ReactNode; classNa
 export default function App() {
   const [mode, setMode] = useState<AppMode>('home');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [quizType, setQuizType] = useState<QuizType | null>(null);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [quizState, setQuizState] = useState<QuizState | null>(null);
+  const [drillLabel, setDrillLabel] = useState<string>('');
+  const [reviewMode, setReviewMode] = useState(true);
   const [progress, setProgress] = useState<ProgressData>(() => {
     const saved = localStorage.getItem('fbla_cyber_progress');
     if (saved) return JSON.parse(saved);
@@ -154,6 +159,70 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('fbla_cyber_progress', JSON.stringify(progress));
   }, [progress]);
+
+  // --- Quiz start functions ---
+  const startSpeedQuiz = () => {
+    const pool = [...STUDY_DATA.questions].sort(() => Math.random() - 0.5).slice(0, 10);
+    setQuizState({
+      questions: pool,
+      shuffledOptions: pool.map(q => shuffleOptions(q)),
+      currentIndex: 0,
+      answers: new Array(pool.length).fill(null),
+      isFinished: false,
+      startTime: Date.now(),
+      timeRemaining: 3 * 60,
+      reviewMode,
+    });
+    setQuizType('speed');
+    setDrillLabel('Speed Quiz');
+    setMode('quiz');
+  };
+
+  const startCramMode = () => {
+    const bankRaw = localStorage.getItem('fbla_wrong_bank');
+    const bank: string[] = bankRaw ? JSON.parse(bankRaw) : [];
+    if (bank.length === 0) {
+      alert('No wrong answers saved yet! Take a quiz first.');
+      return;
+    }
+    const pool = STUDY_DATA.questions
+      .filter(q => bank.includes(q.id))
+      .sort(() => Math.random() - 0.5);
+    setQuizState({
+      questions: pool,
+      shuffledOptions: pool.map(q => shuffleOptions(q)),
+      currentIndex: 0,
+      answers: new Array(pool.length).fill(null),
+      isFinished: false,
+      startTime: Date.now(),
+      timeRemaining: 15 * 60,
+      reviewMode,
+    });
+    setQuizType('cram');
+    setDrillLabel(`Cram (${pool.length} q)`);
+    setMode('quiz');
+  };
+
+  const startTopicDrill = (cat: string) => {
+    setSelectedCategories([cat]);
+    const pool = STUDY_DATA.questions
+      .filter(q => q.category === cat)
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 20);
+    setQuizState({
+      questions: pool,
+      shuffledOptions: pool.map(q => shuffleOptions(q)),
+      currentIndex: 0,
+      answers: new Array(pool.length).fill(null),
+      isFinished: false,
+      startTime: Date.now(),
+      timeRemaining: 15 * 60,
+      reviewMode,
+    });
+    setQuizType('drill');
+    setDrillLabel(cat);
+    setMode('quiz');
+  };
 
   // --- Sub-Views ---
 
@@ -241,7 +310,7 @@ export default function App() {
             </div>
             <div>
               <h3 className="text-xl font-bold text-slate-100">Quiz Mode</h3>
-              <p className="text-sm text-slate-400">Full mock exams or targeted drills.</p>
+              <p className="text-sm text-slate-400">Full mock exams (100q/50min) or targeted drills.</p>
             </div>
           </div>
           <Button className="w-full">Start Practice</Button>
@@ -259,6 +328,46 @@ export default function App() {
           </div>
           <Button variant="secondary" className="w-full">Open Deck</Button>
         </Card>
+      </div>
+
+      {/* Quick Access Row */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <Card className="p-3 text-center cursor-pointer hover:border-blue-500/30 transition-all group" onClick={() => startSpeedQuiz()}>
+          <div className="text-2xl mb-1">⚡</div>
+          <div className="text-xs font-bold text-slate-300 group-hover:text-blue-400">Speed Quiz</div>
+          <div className="text-[10px] text-slate-500">10 questions · 3 min</div>
+        </Card>
+        <Card className="p-3 text-center cursor-pointer hover:border-red-500/30 transition-all group" onClick={() => startCramMode()}>
+          <div className="text-2xl mb-1">🔥</div>
+          <div className="text-xs font-bold text-slate-300 group-hover:text-red-400">Cram Mode</div>
+          <div className="text-[10px] text-slate-500">Wrong questions only</div>
+        </Card>
+        <Card className="p-3 text-center cursor-pointer hover:border-purple-500/30 transition-all group" onClick={() => { setSelectedCategories(Object.values(CATEGORIES)); setMode('quiz'); }}>
+          <div className="text-2xl mb-1">📚</div>
+          <div className="text-xs font-bold text-slate-300 group-hover:text-purple-400">All Topics</div>
+          <div className="text-[10px] text-slate-500">523 questions</div>
+        </Card>
+        <Card className="p-3 text-center cursor-pointer hover:border-emerald-500/30 transition-all group" onClick={() => setMode('progress')}>
+          <div className="text-2xl mb-1">📊</div>
+          <div className="text-xs font-bold text-slate-300 group-hover:text-emerald-400">My Progress</div>
+          <div className="text-[10px] text-slate-500">Stats & history</div>
+        </Card>
+      </div>
+
+      {/* Quick Topic Drills */}
+      <div>
+        <h3 className="text-sm font-bold text-slate-400 mb-2 px-1">Quick Topic Drills</h3>
+        <div className="flex flex-wrap gap-2">
+          {Object.values(CATEGORIES).map(cat => (
+            <button
+              key={cat}
+              onClick={() => startTopicDrill(cat)}
+              className="px-3 py-1.5 text-xs rounded-full border border-slate-700 text-slate-400 hover:bg-blue-600/10 hover:border-blue-500/30 hover:text-blue-400 transition-all"
+            >
+              {cat.split(' ').slice(-1)[0]}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="flex flex-wrap justify-center gap-4">
@@ -480,12 +589,6 @@ export default function App() {
   };
 
   const QuizView = () => {
-    const [quizType, setQuizType] = useState<QuizType | null>(null);
-    const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-    const [quizState, setQuizState] = useState<QuizState | null>(null);
-    const [drillLabel, setDrillLabel] = useState<string>('');
-    const [reviewMode, setReviewMode] = useState(true);
-
     // Weak areas: bottom 2 categories by accuracy (min 1 attempt), else fallback
     const getWeakCategories = (): string[] => {
       const entries = (Object.entries(progress) as [string, { total: number; correct: number }][])
@@ -602,6 +705,29 @@ export default function App() {
       }
       
       setProgress(newProgress);
+      
+      // Calculate score for history recording
+      const scoreCalc = quizState.answers.filter((a, i) => a === quizState.questions[i].correctAnswer).length;
+      const skippedCalc = quizState.answers.filter(a => a === null).length;
+      const maxDurationCalc = quizType === 'full' ? 50 * 60 : 15 * 60;
+      const elapsedCalc = Math.min(Math.floor((Date.now() - quizState.startTime) / 1000), maxDurationCalc);
+      const pctCalc = skippedCalc < quizState.questions.length ? Math.round((scoreCalc / quizState.questions.length) * 100) : 0;
+      
+      // Record session history
+      const historyRaw = localStorage.getItem('fbla_session_history');
+      const history: Array<{ date: string; type: string; score: number; total: number; pct: number; time: number }> = historyRaw ? JSON.parse(historyRaw) : [];
+      history.unshift({
+        date: new Date().toISOString(),
+        type: quizType === 'full' ? 'Full Exam' : quizType === 'speed' ? 'Speed Quiz' : quizType === 'cram' ? 'Cram' : 'Drill',
+        score: scoreCalc,
+        total: quizState.questions.length,
+        pct: pctCalc,
+        time: elapsedCalc,
+      });
+      // Keep last 50 sessions
+      if (history.length > 50) history.pop();
+      localStorage.setItem('fbla_session_history', JSON.stringify(history));
+      
       setQuizState({ ...quizState, isFinished: true });
     };
 
@@ -1180,6 +1306,51 @@ export default function App() {
             </Card>
           ))}
         </div>
+
+        {/* Session History */}
+        {(() => {
+          const historyRaw = localStorage.getItem('fbla_session_history');
+          const history: Array<{ date: string; type: string; score: number; total: number; pct: number; time: number }> = historyRaw ? JSON.parse(historyRaw) : [];
+          if (history.length === 0) return null;
+          return (
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold text-slate-100">Recent Sessions</h3>
+              <div className="space-y-2">
+                {history.slice(0, 10).map((session, i) => (
+                  <Card key={i} className="p-3 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold",
+                        session.pct >= 80 ? "bg-emerald-500/20 text-emerald-400" :
+                        session.pct >= 60 ? "bg-yellow-500/20 text-yellow-400" :
+                        "bg-red-500/20 text-red-400"
+                      )}>
+                        {session.pct >= 80 ? "✓" : session.pct >= 60 ? "~" : "✗"}
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-slate-300">{session.type}</div>
+                        <div className="text-[10px] text-slate-500">
+                          {new Date(session.date).toLocaleDateString()} · {Math.floor(session.time / 60)}m {session.time % 60}s
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className={cn(
+                        "text-sm font-bold",
+                        session.pct >= 80 ? "text-emerald-400" :
+                        session.pct >= 60 ? "text-yellow-400" : "text-red-400"
+                      )}>{session.pct}%</div>
+                      <div className="text-[10px] text-slate-500">{session.score}/{session.total}</div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+              {history.length > 10 && (
+                <p className="text-xs text-slate-500 text-center">+{history.length - 10} more sessions</p>
+              )}
+            </div>
+          );
+        })()}
       </div>
     );
   };
