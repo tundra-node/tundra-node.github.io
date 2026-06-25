@@ -769,6 +769,30 @@ export default function App() {
               <Button className="w-full" onClick={() => startQuiz('full')}>Start Mock Exam</Button>
             </Card>
 
+            {/* Speed Quiz + Cram Mode Row */}
+            <div className="grid sm:grid-cols-2 gap-4">
+              <Card className="p-5 border-amber-500/20 hover:border-amber-500/40 transition-all">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2 bg-amber-500/10 rounded-lg"><Zap className="w-5 h-5 text-amber-400" /></div>
+                  <div>
+                    <h3 className="font-bold text-slate-100">Speed Quiz</h3>
+                    <p className="text-xs text-slate-500">10 questions · 3 minutes</p>
+                  </div>
+                </div>
+                <Button variant="secondary" size="sm" className="w-full" onClick={startSpeedQuiz}>Quick Sprint</Button>
+              </Card>
+              <Card className="p-5 border-red-500/20 hover:border-red-500/40 transition-all">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="p-2 bg-red-500/10 rounded-lg"><AlertCircle className="w-5 h-5 text-red-400" /></div>
+                  <div>
+                    <h3 className="font-bold text-slate-100">Cram Mode</h3>
+                    <p className="text-xs text-slate-500">Wrong answers only</p>
+                  </div>
+                </div>
+                <Button variant="danger" size="sm" className="w-full" onClick={startCramMode}>Drill Missed</Button>
+              </Card>
+            </div>
+
             {/* Weak Areas Drill */}
             {(() => {
               const cats = getWeakCategories();
