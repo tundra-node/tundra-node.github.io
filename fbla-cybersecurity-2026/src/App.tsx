@@ -755,6 +755,16 @@ export default function App() {
         .filter((_, i) => quizState.answers[i] !== quizState.questions[i].correctAnswer)
         .map(q => q.id);
 
+      // Grade calculation
+      const getGrade = (pct: number): { letter: string; label: string; color: string } => {
+        if (pct >= 90) return { letter: 'A', label: 'Excellent', color: 'text-emerald-400' };
+        if (pct >= 80) return { letter: 'B', label: 'Good', color: 'text-emerald-400' };
+        if (pct >= 70) return { letter: 'C', label: 'Fair', color: 'text-yellow-400' };
+        if (pct >= 60) return { letter: 'D', label: 'Needs Work', color: 'text-orange-400' };
+        return { letter: 'F', label: 'Keep Studying', color: 'text-red-400' };
+      };
+      const grade = getGrade(percentage);
+
       // Per-category breakdown for this session
       const catBreakdown: Record<string, { correct: number; total: number }> = {};
       quizState.questions.forEach((q, i) => {
@@ -795,7 +805,7 @@ export default function App() {
           <Card className="p-8">
             <h2 className="text-2xl font-bold text-slate-100 text-center mb-6">Results</h2>
             <div className="flex flex-col sm:flex-row items-center gap-8">
-              {/* Circle */}
+              {/* Circle + Grade */}
               <div className="relative w-36 h-36 shrink-0">
                 <svg className="w-full h-full -rotate-90">
                   <circle cx="72" cy="72" r="60" fill="transparent" stroke="currentColor" strokeWidth="10" className="text-slate-800" />
@@ -808,8 +818,8 @@ export default function App() {
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-3xl font-bold text-slate-100">{percentage}%</span>
-                  <span className="text-xs text-slate-500 font-mono">{score}/{quizState.questions.length}</span>
+                  <span className={cn("text-4xl font-bold", grade.color)}>{grade.letter}</span>
+                  <span className="text-sm text-slate-400 font-mono">{percentage}%</span>
                 </div>
               </div>
               {/* Stats grid */}
@@ -820,19 +830,29 @@ export default function App() {
                 </div>
                 <div className="bg-slate-800/60 rounded-lg p-3">
                   <div className="text-2xl font-bold text-red-400">{missedIds.length}</div>
-                  <div className="text-[10px] text-slate-500 uppercase tracking-wider mt-0.5">Missed</div>
+                  <div className="text-[10px] text-slate-500 uppercase tracking-wider mt-0.5">Wrong</div>
+                </div>
+                <div className="bg-slate-800/60 rounded-lg p-3">
+                  <div className="text-2xl font-bold text-slate-300">{skipped}</div>
+                  <div className="text-[10px] text-slate-500 uppercase tracking-wider mt-0.5">Skipped</div>
                 </div>
                 <div className="bg-slate-800/60 rounded-lg p-3">
                   <div className="text-2xl font-bold text-amber-400">🔥 {maxSessionStreak}</div>
                   <div className="text-[10px] text-slate-500 uppercase tracking-wider mt-0.5">Best Streak</div>
                 </div>
-                <div className="bg-slate-800/60 rounded-lg p-3">
+                <div className="bg-slate-800/60 rounded-lg p-3 col-span-2">
                   <div className="text-lg font-bold text-blue-400 font-mono">{formatTime(elapsed)}</div>
                   <div className="text-[10px] text-slate-500 uppercase tracking-wider mt-0.5">Time Taken</div>
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-3 mt-6">
+            {/* Grade message */}
+            <div className="mt-4 text-center">
+              <span className={cn("text-sm font-bold", grade.color)}>
+                {grade.label} — {percentage >= 80 ? "You're ready!" : percentage >= 60 ? "Almost there — review weak areas." : "Keep studying — focus on missed topics."}
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-3 mt-4">
               <Button variant="secondary" onClick={() => setQuizType(null)}>Menu</Button>
               <Button variant="outline" onClick={() => startQuiz(quizType!)}>Retake</Button>
               <Button
