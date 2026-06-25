@@ -525,12 +525,15 @@ export default function App() {
 
     const startQuiz = (type: QuizType) => {
       const activeCats = selectedCategories.length > 0 ? selectedCategories : null;
-      const pool = type === 'full'
-        ? [...STUDY_DATA.questions].sort(() => Math.random() - 0.5)
-        : STUDY_DATA.questions
+      let pool;
+      if (type === 'full') {
+        pool = [...STUDY_DATA.questions].sort(() => Math.random() - 0.5).slice(0, 100);
+      } else {
+        pool = STUDY_DATA.questions
             .filter(q => !activeCats || activeCats.includes(q.category))
             .sort(() => Math.random() - 0.5)
             .slice(0, 20);
+      }
       setDrillLabel('');
 
       setQuizState({
@@ -614,7 +617,7 @@ export default function App() {
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h3 className="text-xl font-bold text-slate-100">Full Mock Exam</h3>
-                  <p className="text-sm text-slate-400">All questions · 50 minutes · All categories</p>
+                  <p className="text-sm text-slate-400">100 questions · 50 minutes · All categories</p>
                 </div>
                 <Badge className="bg-blue-900/30 text-blue-400 border-blue-500/30">Official Format</Badge>
               </div>
