@@ -1165,12 +1165,12 @@ export default function App() {
   };
 
   const CHEAT_SECTIONS = [
-    { id: 'sec1', label: 'Security Fundamentals', color: 'text-blue-400', items: 15 },
-    { id: 'sec2', label: 'Cyber Threats & Vulnerabilities', color: 'text-red-400', items: 20 },
-    { id: 'sec3', label: 'Security & Design', color: 'text-purple-400', items: 20 },
-    { id: 'sec4', label: 'Network & Data Security', color: 'text-emerald-400', items: 15 },
-    { id: 'sec5', label: 'Security Operations & Management', color: 'text-yellow-400', items: 10 },
-    { id: 'sec6', label: 'Security Protocols & Threat Mitigation', color: 'text-cyan-400', items: 20 },
+    { id: 'sec1', label: 'Security Fundamentals & TCSEC', color: 'text-blue-400', items: 25 },
+    { id: 'sec2', label: 'Cyber Threats & Historical Malware', color: 'text-red-400', items: 25 },
+    { id: 'sec3', label: 'Security and Design (RAID, Cloud, IoT)', color: 'text-purple-400', items: 25 },
+    { id: 'sec4', label: 'Network, Crypto & Ports', color: 'text-emerald-400', items: 30 },
+    { id: 'sec5', label: 'Operations, IR, Risk & Forensics', color: 'text-yellow-400', items: 30 },
+    { id: 'sec6', label: 'Protocols, Mitigation & Laws', color: 'text-cyan-400', items: 25 },
   ];
 
   const CheatSheetView = () => (
@@ -1204,17 +1204,17 @@ export default function App() {
 
       <div className="grid gap-10">
 
-        {/* ── 1. Security Fundamentals ── */}
+        {/* ── 1. Security Fundamentals & TCSEC ── */}
         <section id="sec1" className="space-y-4 scroll-mt-20">
           <div className="flex items-center gap-2 text-blue-400 border-b border-slate-800 pb-2">
             <Shield className="w-5 h-5" />
-            <h3 className="text-xl font-bold uppercase tracking-wider">1 · Security Fundamentals</h3>
-            <span className="ml-auto text-xs text-slate-500 font-mono">15 test items</span>
+            <h3 className="text-xl font-bold uppercase tracking-wider">1 · Security Fundamentals &amp; TCSEC</h3>
+            <span className="ml-auto text-xs text-slate-500 font-mono">25 test items</span>
           </div>
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-3 gap-4">
             <Card className="p-4 bg-slate-800/30">
               <h4 className="font-bold text-slate-200 mb-2">CIA Triad</h4>
-              <ul className="text-sm text-slate-400 space-y-1">
+              <ul className="text-xs text-slate-400 space-y-1">
                 <li><span className="text-blue-400 font-bold">C</span>onfidentiality — No unauthorized access (encryption, ACLs).</li>
                 <li><span className="text-blue-400 font-bold">I</span>ntegrity — No unauthorized modification (hashing, digital signatures).</li>
                 <li><span className="text-blue-400 font-bold">A</span>vailability — Accessible when needed (UPS, redundancy, backups).</li>
@@ -1222,340 +1222,465 @@ export default function App() {
             </Card>
             <Card className="p-4 bg-slate-800/30">
               <h4 className="font-bold text-slate-200 mb-2">AAA Framework</h4>
-              <ul className="text-sm text-slate-400 space-y-1">
+              <ul className="text-xs text-slate-400 space-y-1">
                 <li><span className="text-blue-400 font-bold">A</span>uthentication — Who are you? (password, biometric, token)</li>
                 <li><span className="text-blue-400 font-bold">A</span>uthorization — What can you do? (roles, permissions)</li>
                 <li><span className="text-blue-400 font-bold">A</span>ccounting — What did you do? (logs, audit trails)</li>
               </ul>
             </Card>
             <Card className="p-4 bg-slate-800/30">
-              <h4 className="font-bold text-slate-200 mb-2">Zero Trust Principles</h4>
-              <ul className="text-sm text-slate-400 space-y-1">
-                <li>• <span className="text-slate-200">Never trust, always verify</span> — even inside the network.</li>
-                <li>• Assume breach — limit blast radius.</li>
-                <li>• Use least privilege for every access request.</li>
-                <li>• Verify explicitly — check identity, device health, location.</li>
-              </ul>
-            </Card>
-            <Card className="p-4 bg-slate-800/30">
-              <h4 className="font-bold text-slate-200 mb-2">Deception Tech</h4>
-              <ul className="text-sm text-slate-400 space-y-1">
-                <li><span className="text-blue-400 font-bold">Honeypot</span> — single decoy system to lure attackers.</li>
-                <li><span className="text-blue-400 font-bold">Honeynet</span> — network of honeypots mimicking production.</li>
-                <li><span className="text-blue-400 font-bold">Honeyfile</span> — fake file that triggers alert when accessed.</li>
-              </ul>
-            </Card>
-            <Card className="p-4 bg-slate-800/30 md:col-span-2">
-              <h4 className="font-bold text-slate-200 mb-2">Digital Trust &amp; Number Systems</h4>
-              <div className="grid md:grid-cols-2 gap-4 text-xs text-slate-400">
-                <ul className="space-y-1">
-                  <li><span className="text-slate-200">Non-repudiation:</span> Cannot deny performing an action (digital sigs).</li>
-                  <li><span className="text-slate-200">Identity Proofing:</span> Verifying real-world identity before issuing credentials.</li>
-                  <li><span className="text-slate-200">Attestation:</span> Cryptographic proof a system is in a trusted state (boot integrity).</li>
-                </ul>
-                <ul className="space-y-1">
-                  <li><span className="text-slate-200">Binary (Base 2):</span> 1010₂ = 10₁₀</li>
-                  <li><span className="text-slate-200">Hex (Base 16):</span> 0xFF = 255₁₀ · Uses 0–9, A–F</li>
-                  <li><span className="text-slate-200">Decimal (Base 10):</span> Standard human counting system.</li>
-                </ul>
-              </div>
-            </Card>
-          </div>
-        </section>
-
-        {/* ── 2. Cyber Threats and Vulnerabilities ── */}
-        <section id="sec2" className="space-y-4 scroll-mt-20">
-          <div className="flex items-center gap-2 text-red-400 border-b border-slate-800 pb-2">
-            <AlertCircle className="w-5 h-5" />
-            <h3 className="text-xl font-bold uppercase tracking-wider">2 · Cyber Threats &amp; Vulnerabilities</h3>
-            <span className="ml-auto text-xs text-slate-500 font-mono">20 test items</span>
-          </div>
-          <div className="grid md:grid-cols-3 gap-4">
-            <Card className="p-4 bg-slate-800/30">
-              <h4 className="font-bold text-slate-200 mb-2">Malware Types</h4>
-              <ul className="text-xs text-slate-400 space-y-2">
-                <li><span className="text-slate-200">Virus:</span> Attaches to files; needs user to spread.</li>
-                <li><span className="text-slate-200">Worm:</span> Self-replicates across networks automatically.</li>
-                <li><span className="text-slate-200">Trojan:</span> Disguised as legitimate software.</li>
-                <li><span className="text-slate-200">Ransomware:</span> Encrypts files; demands payment.</li>
-                <li><span className="text-slate-200">Rootkit:</span> Hides itself; gives attacker admin access.</li>
-                <li><span className="text-slate-200">Keylogger:</span> Records keystrokes to steal credentials.</li>
-                <li><span className="text-slate-200">Logic Bomb:</span> Triggers on a condition (date, event).</li>
-              </ul>
-            </Card>
-            <Card className="p-4 bg-slate-800/30">
-              <h4 className="font-bold text-slate-200 mb-2">Social Engineering</h4>
-              <ul className="text-xs text-slate-400 space-y-2">
-                <li><span className="text-slate-200">Phishing:</span> Mass fraudulent emails.</li>
-                <li><span className="text-slate-200">Spear Phishing:</span> Targeted, personalized phishing.</li>
-                <li><span className="text-slate-200">Whaling:</span> Targets C-suite executives.</li>
-                <li><span className="text-slate-200">Vishing:</span> Voice/phone scams.</li>
-                <li><span className="text-slate-200">Smishing:</span> SMS text scams.</li>
-                <li><span className="text-slate-200">Tailgating:</span> Physical unauthorized entry.</li>
-                <li><span className="text-slate-200">Shoulder Surfing:</span> Watching someone type credentials.</li>
-              </ul>
-            </Card>
-            <Card className="p-4 bg-slate-800/30">
-              <h4 className="font-bold text-slate-200 mb-2">Attacks &amp; Exploits</h4>
-              <ul className="text-xs text-slate-400 space-y-2">
-                <li><span className="text-slate-200">DDoS:</span> Flood target with traffic (botnet).</li>
-                <li><span className="text-slate-200">Zero-Day:</span> Unknown, unpatched vulnerability.</li>
-                <li><span className="text-slate-200">SQL Injection:</span> Malicious SQL in input fields.</li>
-                <li><span className="text-slate-200">Buffer Overflow:</span> Overwrite adjacent memory.</li>
-                <li><span className="text-slate-200">Evil Twin:</span> Fake Wi-Fi access point.</li>
-                <li><span className="text-slate-200">Birthday Attack:</span> Find hash collisions.</li>
-                <li><span className="text-slate-200">Downgrade Attack:</span> Force use of weaker protocol.</li>
-              </ul>
-            </Card>
-            <Card className="p-4 bg-slate-800/30 md:col-span-3">
-              <h4 className="font-bold text-slate-200 mb-2">Vulnerability Types Quick Reference</h4>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-slate-400">
-                <div><span className="text-slate-200 block">Backdoor</span>Secret entry point bypassing normal auth.</div>
-                <div><span className="text-slate-200 block">Race Condition</span>Outcome depends on uncontrolled event timing.</div>
-                <div><span className="text-slate-200 block">Jailbreaking</span>Remove software restrictions on a device.</div>
-                <div><span className="text-slate-200 block">Unpatched Software</span>Known vulnerability with no applied fix.</div>
-              </div>
-            </Card>
-          </div>
-        </section>
-
-        {/* ── 3. Security and Design ── */}
-        <section id="sec3" className="space-y-4 scroll-mt-20">
-          <div className="flex items-center gap-2 text-purple-400 border-b border-slate-800 pb-2">
-            <Zap className="w-5 h-5" />
-            <h3 className="text-xl font-bold uppercase tracking-wider">3 · Security &amp; Design</h3>
-            <span className="ml-auto text-xs text-slate-500 font-mono">20 test items</span>
-          </div>
-          <div className="grid md:grid-cols-2 gap-4">
-            <Card className="p-4 bg-slate-800/30">
-              <h4 className="font-bold text-slate-200 mb-2">Cloud Service Models</h4>
-              <ul className="text-sm text-slate-400 space-y-1">
-                <li><span className="text-purple-400 font-bold">IaaS</span> — Infrastructure as a Service. Most control (you manage OS up). e.g., AWS EC2.</li>
-                <li><span className="text-purple-400 font-bold">PaaS</span> — Platform as a Service. Provider manages OS; you manage apps. e.g., Heroku.</li>
-                <li><span className="text-purple-400 font-bold">SaaS</span> — Software as a Service. Provider manages everything. e.g., Gmail, Office 365.</li>
-              </ul>
-            </Card>
-            <Card className="p-4 bg-slate-800/30">
-              <h4 className="font-bold text-slate-200 mb-2">RAID Levels</h4>
-              <ul className="text-sm text-slate-400 space-y-1">
-                <li><span className="text-purple-400 font-bold">RAID 0</span> — Striping. Best speed. No fault tolerance.</li>
-                <li><span className="text-purple-400 font-bold">RAID 1</span> — Mirroring. Full copy on each drive. Survives 1 failure.</li>
-                <li><span className="text-purple-400 font-bold">RAID 5</span> — Striping + distributed parity. ≥3 drives. Survives 1 failure.</li>
-              </ul>
-            </Card>
-            <Card className="p-4 bg-slate-800/30">
-              <h4 className="font-bold text-slate-200 mb-2">Segmentation</h4>
-              <ul className="text-sm text-slate-400 space-y-1">
-                <li><span className="text-purple-400 font-bold">Physical:</span> Separate hardware, cables, routers. Strongest isolation.</li>
-                <li><span className="text-purple-400 font-bold">Logical (VLAN):</span> Software-defined separation on shared hardware. More flexible.</li>
-              </ul>
-            </Card>
-            <Card className="p-4 bg-slate-800/30">
-              <h4 className="font-bold text-slate-200 mb-2">Virtualization &amp; Containers</h4>
-              <ul className="text-sm text-slate-400 space-y-1">
-                <li><span className="text-purple-400 font-bold">VM:</span> Full OS emulation; strong isolation; higher overhead.</li>
-                <li><span className="text-purple-400 font-bold">Container:</span> Shares host OS kernel; lightweight; isolated process space.</li>
-                <li>Both limit blast radius — compromise in one doesn't spread easily.</li>
-              </ul>
-            </Card>
-            <Card className="p-4 bg-slate-800/30 md:col-span-2">
-              <h4 className="font-bold text-slate-200 mb-2">IoT Security + Backup + CIA in Design</h4>
-              <div className="grid md:grid-cols-3 gap-4 text-xs text-slate-400">
-                <ul className="space-y-1">
-                  <li className="text-slate-200 font-bold mb-1">IoT Challenges</li>
-                  <li>• Limited hardware → weak encryption</li>
-                  <li>• Hard to patch / no auto-update</li>
-                  <li>• Default credentials rarely changed</li>
-                  <li>• Massive attack surface at scale</li>
-                </ul>
-                <ul className="space-y-1">
-                  <li className="text-slate-200 font-bold mb-1">3-2-1 Backup Rule</li>
-                  <li>• <span className="text-slate-200">3</span> copies of data</li>
-                  <li>• <span className="text-slate-200">2</span> different media types</li>
-                  <li>• <span className="text-slate-200">1</span> offsite copy</li>
-                  <li>UPS supports Availability.</li>
-                </ul>
-                <ul className="space-y-1">
-                  <li className="text-slate-200 font-bold mb-1">CIA in Design</li>
-                  <li>• <span className="text-slate-200">C:</span> Encryption at rest/transit</li>
-                  <li>• <span className="text-slate-200">I:</span> Hashing, digital signatures</li>
-                  <li>• <span className="text-slate-200">A:</span> UPS, RAID, load balancing</li>
-                </ul>
-              </div>
-            </Card>
-          </div>
-        </section>
-
-        {/* ── 4. Network and Data Security ── */}
-        <section id="sec4" className="space-y-4 scroll-mt-20">
-          <div className="flex items-center gap-2 text-emerald-400 border-b border-slate-800 pb-2">
-            <RotateCcw className="w-5 h-5" />
-            <h3 className="text-xl font-bold uppercase tracking-wider">4 · Network &amp; Data Security</h3>
-            <span className="ml-auto text-xs text-slate-500 font-mono">15 test items</span>
-          </div>
-          <div className="grid md:grid-cols-2 gap-4">
-            <Card className="p-4 bg-slate-800/30">
-              <h4 className="font-bold text-slate-200 mb-2">Cryptography</h4>
-              <ul className="text-sm text-slate-400 space-y-1">
-                <li><span className="text-emerald-400 font-bold">Symmetric:</span> Same key for encrypt + decrypt. Fast. (AES)</li>
-                <li><span className="text-emerald-400 font-bold">Asymmetric:</span> Public key encrypts; private key decrypts. (RSA)</li>
-                <li><span className="text-emerald-400 font-bold">Hashing:</span> One-way fingerprint; verifies integrity. (SHA-256)</li>
-                <li><span className="text-emerald-400 font-bold">Digital Signature:</span> Encrypt with private key → proves authenticity + non-repudiation.</li>
-              </ul>
-            </Card>
-            <Card className="p-4 bg-slate-800/30">
-              <h4 className="font-bold text-slate-200 mb-2">Ciphers</h4>
-              <ul className="text-sm text-slate-400 space-y-1">
-                <li><span className="text-emerald-400 font-bold">Caesar Cipher:</span> Shift each letter by a fixed amount (shift 3: A→D).</li>
-                <li><span className="text-emerald-400 font-bold">Substitution:</span> Replace each letter with another based on a key.</li>
-                <li><span className="text-emerald-400 font-bold">Shift Cipher:</span> General term for letter-shifting encryption.</li>
-              </ul>
-            </Card>
-            <Card className="p-4 bg-slate-800/30">
-              <h4 className="font-bold text-slate-200 mb-2">States of Data</h4>
-              <ul className="text-sm text-slate-400 space-y-1">
-                <li><span className="text-emerald-400 font-bold">At Rest:</span> Stored (disk, DB). Encrypt with AES/BitLocker.</li>
-                <li><span className="text-emerald-400 font-bold">In Transit:</span> Moving over network. Encrypt with TLS/HTTPS.</li>
-                <li><span className="text-emerald-400 font-bold">In Use:</span> Active in RAM/CPU. Hardest to protect.</li>
+              <h4 className="font-bold text-slate-200 mb-2">Kerberos</h4>
+              <ul className="text-xs text-slate-400 space-y-1">
+                <li>• Uses <span className="text-slate-200">symmetric key cryptography</span></li>
+                <li>• Tickets issued by <span className="text-slate-200">KDC</span> (Key Distribution Center)</li>
+                <li>• TGT lifetime = <span className="text-slate-200">10 hours</span></li>
+                <li>• Max clock skew = <span className="text-slate-200">5 minutes</span></li>
+                <li>• Port: <span className="text-slate-200">88</span></li>
               </ul>
             </Card>
             <Card className="p-4 bg-slate-800/30">
               <h4 className="font-bold text-slate-200 mb-2">Access Control Models</h4>
-              <ul className="text-sm text-slate-400 space-y-1">
-                <li><span className="text-emerald-400 font-bold">MAC</span> — Mandatory. OS enforces labels (Top Secret etc.).</li>
-                <li><span className="text-emerald-400 font-bold">DAC</span> — Discretionary. Resource owner decides access.</li>
-                <li><span className="text-emerald-400 font-bold">RBAC</span> — Role-Based. Access by job role.</li>
+              <ul className="text-xs text-slate-400 space-y-1">
+                <li><span className="text-blue-400 font-bold">MAC</span> — System enforces labels (Top Secret, etc.)</li>
+                <li><span className="text-blue-400 font-bold">DAC</span> — Resource owner decides access</li>
+                <li><span className="text-blue-400 font-bold">RBAC</span> — Access by job role</li>
+                <li><span className="text-blue-400 font-bold">ABAC</span> — By attributes (time, location, department)</li>
               </ul>
             </Card>
-            <Card className="p-4 bg-slate-800/30 md:col-span-2">
-              <h4 className="font-bold text-slate-200 mb-2">Authentication Methods &amp; Blockchain</h4>
-              <div className="grid md:grid-cols-2 gap-4 text-xs text-slate-400">
-                <ul className="space-y-1">
-                  <li><span className="text-slate-200">MFA:</span> Something you know + have + are.</li>
-                  <li><span className="text-slate-200">Certificate:</span> Digital file binding public key to identity, signed by a CA.</li>
-                  <li><span className="text-slate-200">Token:</span> Physical/software device generating one-time codes.</li>
-                </ul>
-                <ul className="space-y-1">
-                  <li><span className="text-slate-200">Blockchain:</span> Distributed immutable ledger. Each block contains previous block's hash → tamper-evident.</li>
-                  <li><span className="text-slate-200">Hashing for integrity:</span> Store hash of file; recompute later to detect changes.</li>
-                </ul>
+            <Card className="p-4 bg-slate-800/30">
+              <h4 className="font-bold text-slate-200 mb-2">Zero Trust &amp; Deception</h4>
+              <ul className="text-xs text-slate-400 space-y-1">
+                <li>• <span className="text-slate-200">Never trust, always verify</span> — even inside network</li>
+                <li>• <span className="text-blue-400 font-bold">Honeypot</span> — single decoy system</li>
+                <li>• <span className="text-blue-400 font-bold">Honeynet</span> — network of honeypots</li>
+                <li>• <span className="text-blue-400 font-bold">Honeyfile</span> — fake file, alerts on access</li>
+              </ul>
+            </Card>
+            <Card className="p-4 bg-slate-800/30">
+              <h4 className="font-bold text-slate-200 mb-2">TCSEC (Orange Book)</h4>
+              <ul className="text-xs text-slate-400 space-y-1">
+                <li><span className="text-blue-400 font-bold">TCSEC</span> = Trusted Computer System Evaluation Criteria</li>
+                <li>• Published by <span className="text-slate-200">DOD</span> (Department of Defense)</li>
+                <li>• Called the <span className="text-slate-200">"Orange Book"</span> in the Rainbow Series</li>
+                <li>• Levels: C1 → C2 → B1 → B2 → B3 → <span className="text-slate-200">A1</span> (highest)</li>
+                <li>• A1 = Verified design with <span className="text-slate-200">formal methods</span></li>
+                <li>• Replaced by <span className="text-slate-200">Common Criteria</span> (ISO 15408)</li>
+              </ul>
+            </Card>
+            <Card className="p-4 bg-slate-800/30 md:col-span-3">
+              <h4 className="font-bold text-slate-200 mb-2">Rainbow Series Quick Reference</h4>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs text-slate-400">
+                <div><span className="text-orange-400 font-bold block">Orange</span>TCSEC (computer security)</div>
+                <div><span className="text-red-400 font-bold block">Red</span>Network security</div>
+                <div><span className="text-green-400 font-bold block">Green</span>Password management</div>
+                <div><span className="text-blue-400 font-bold block">Blue</span>Database security</div>
+                <div><span className="text-purple-400 font-bold block">Purple</span>Trusted distribution</div>
+                <div><span className="text-yellow-400 font-bold block">Tan</span>PC security</div>
+                <div><span className="text-pink-400 font-bold block">Lavender</span>formal verification</div>
+                <div><span className="text-cyan-400 font-bold block">Venus</span>security auditing</div>
+                <br/><span className="text-slate-200 col-span-2"><b>ITSEC</b>: European alternative to TCSEC, rated E0–E6</span>
               </div>
             </Card>
           </div>
         </section>
 
-        {/* ── 5. Security Operations and Management ── */}
+        {/* ── 2. Cyber Threats & Historical Malware ── */}
+        <section id="sec2" className="space-y-4 scroll-mt-20">
+          <div className="flex items-center gap-2 text-red-400 border-b border-slate-800 pb-2">
+            <AlertCircle className="w-5 h-5" />
+            <h3 className="text-xl font-bold uppercase tracking-wider">2 · Cyber Threats &amp; Historical Malware</h3>
+            <span className="ml-auto text-xs text-slate-500 font-mono">25 test items</span>
+          </div>
+          <div className="grid md:grid-cols-3 gap-4">
+            <Card className="p-4 bg-slate-800/30">
+              <h4 className="font-bold text-slate-200 mb-2">Malware Classification</h4>
+              <ul className="text-xs text-slate-400 space-y-1.5">
+                <li><span className="text-slate-200">Virus:</span> Attaches to files; needs user to spread</li>
+                <li><span className="text-slate-200">Worm:</span> Self-replicates across networks without user</li>
+                <li><span className="text-slate-200">Trojan:</span> Disguised as legitimate software; does NOT self-replicate</li>
+                <li><span className="text-slate-200">Ransomware:</span> Encrypts files; demands payment</li>
+                <li><span className="text-slate-200">Rootkit:</span> Hides deep within OS kernel</li>
+                <li><span className="text-slate-200">Keylogger:</span> Records keystrokes</li>
+                <li><span className="text-slate-200">Logic Bomb:</span> Activates on condition</li>
+                <li><span className="text-slate-200">Bootkit:</span> Infects MBR/UEFI firmware</li>
+              </ul>
+            </Card>
+            <Card className="p-4 bg-slate-800/30">
+              <h4 className="font-bold text-slate-200 mb-2">Social Engineering</h4>
+              <ul className="text-xs text-slate-400 space-y-1.5">
+                <li><span className="text-slate-200">Phishing:</span> Mass fraudulent emails</li>
+                <li><span className="text-slate-200">Spear Phishing:</span> Targeted &amp; personalized</li>
+                <li><span className="text-slate-200">Whaling:</span> Targets C-suite executives</li>
+                <li><span className="text-slate-200">Vishing:</span> Voice/phone scams</li>
+                <li><span className="text-slate-200">Smishing:</span> SMS text scams</li>
+                <li><span className="text-slate-200">Tailgating:</span> Following through secure door</li>
+                <li><span className="text-slate-200">Pretexting:</span> False scenario to gain trust</li>
+                <li><span className="text-slate-200">Baiting:</span> Infected USB drives in public</li>
+              </ul>
+            </Card>
+            <Card className="p-4 bg-slate-800/30">
+              <h4 className="font-bold text-slate-200 mb-2">Attack Types</h4>
+              <ul className="text-xs text-slate-400 space-y-1.5">
+                <li><span className="text-slate-200">DDoS:</span> Multiple sources flood target</li>
+                <li><span className="text-slate-200">Zero-Day:</span> Unknown vulnerability, no patch</li>
+                <li><span className="text-slate-200">SQL Injection:</span> Malicious SQL in input fields</li>
+                <li><span className="text-slate-200">Buffer Overflow:</span> Overwrite adjacent memory</li>
+                <li><span className="text-slate-200">Evil Twin:</span> Fake Wi-Fi AP with same SSID</li>
+                <li><span className="text-slate-200">Birthday Attack:</span> Exploit hash collisions</li>
+                <li><span className="text-slate-200">Downgrade Attack:</span> Force weaker protocol</li>
+                <li><span className="text-slate-200">ARP Poisoning:</span> Falsify MAC-to-IP mappings</li>
+              </ul>
+            </Card>
+            <Card className="p-4 bg-slate-800/30 md:col-span-2">
+              <h4 className="font-bold text-slate-200 mb-2">Historical Malware Timeline</h4>
+              <div className="grid md:grid-cols-2 gap-3 text-xs text-slate-400">
+                <ul className="space-y-1.5">
+                  <li><span className="text-slate-200">Morris Worm (1988):</span> Exploited sendmail + fingerd; ~$10M damage</li>
+                  <li><span className="text-slate-200">Melissa (1999):</span> Macro virus via Word doc attachment</li>
+                  <li><span className="text-slate-200">ILOVEYOU (2000):</span> VBScript email attachment; overwrote media files</li>
+                  <li><span className="text-slate-200">Code Red (2001):</span> Buffer overflow in IIS; DDoS on White House IP</li>
+                  <li><span className="text-slate-200">Nimda (2001):</span> Multi-vector (email, shares, web uploads, IIS)</li>
+                </ul>
+                <ul className="space-y-1.5">
+                  <li><span className="text-slate-200">SQL Slammer (2003):</span> UDP 1434; internet slowdown in 10 minutes</li>
+                  <li><span className="text-slate-200">MyDoom (2004):</span> Fastest email worm; DDoS on SCO Group</li>
+                  <li><span className="text-slate-200">Sasser (2004):</span> LSASS buffer overflow (port 445); no user interaction</li>
+                  <li><span className="text-slate-200">Storm Worm (2007):</span> P2P botnet; emails referenced storm events</li>
+                  <li><span className="text-slate-200">Conficker (2008):</span> Windows vulnerability; millions of bots</li>
+                </ul>
+              </div>
+            </Card>
+            <Card className="p-4 bg-slate-800/30">
+              <h4 className="font-bold text-slate-200 mb-2">Malware Naming Quirks</h4>
+              <ul className="text-xs text-slate-400 space-y-1.5">
+                <li>• <span className="text-slate-200">Nimda</span> = "admin" spelled backwards</li>
+                <li>• <span className="text-slate-200">Storm Worm</span> emails used real weather disaster as lure</li>
+                <li>• <span className="text-slate-200">MyDoom</span> backdoor: scheduled DDoS at specific time</li>
+                <li>• <span className="text-slate-200">Sasser</span> spread via port 445 (LSASS) — no user action</li>
+                <li>• Polymorphic = changes signature per infection</li>
+                <li>• Metamorphic = completely rewrites code each time</li>
+              </ul>
+            </Card>
+          </div>
+        </section>
+
+        {/* ── 3. Security and Design (RAID, Cloud, IoT) ── */}
+        <section id="sec3" className="space-y-4 scroll-mt-20">
+          <div className="flex items-center gap-2 text-purple-400 border-b border-slate-800 pb-2">
+            <Zap className="w-5 h-5" />
+            <h3 className="text-xl font-bold uppercase tracking-wider">3 · Security &amp; Design</h3>
+            <span className="ml-auto text-xs text-slate-500 font-mono">25 test items</span>
+          </div>
+          <div className="grid md:grid-cols-3 gap-4">
+            <Card className="p-4 bg-slate-800/30">
+              <h4 className="font-bold text-slate-200 mb-2">RAID Levels</h4>
+              <ul className="text-xs text-slate-400 space-y-1.5">
+                <li><span className="text-purple-400 font-bold">RAID 0</span> — Striping. No redundancy. Fastest.</li>
+                <li><span className="text-purple-400 font-bold">RAID 1</span> — Mirroring. 2+ disks. Survives 1 fail.</li>
+                <li><span className="text-purple-400 font-bold">RAID 5</span> — Striping + distributed parity. ≥3 disks. Survives 1.</li>
+                <li><span className="text-purple-400 font-bold">RAID 10</span> — Stripe + Mirror. ≥4 disks. Best performance + redundancy.</li>
+                <li>• RAID 5 rebuild = vulnerable to 2nd failure</li>
+                <li>• RAID 5 during rebuild: any additional failure = total loss</li>
+              </ul>
+            </Card>
+            <Card className="p-4 bg-slate-800/30">
+              <h4 className="font-bold text-slate-200 mb-2">Cloud Models</h4>
+              <ul className="text-xs text-slate-400 space-y-1.5">
+                <li><span className="text-purple-400 font-bold">IaaS</span> — You manage OS, runtime, apps. (EC2)</li>
+                <li><span className="text-purple-400 font-bold">PaaS</span> — You manage apps only. (Heroku)</li>
+                <li><span className="text-purple-400 font-bold">SaaS</span> — Provider manages all. (Office 365)</li>
+                <li>• <span className="text-slate-200">Most control:</span> IaaS</li>
+                <li>• <span className="text-slate-200">Least control:</span> SaaS</li>
+                <li>• Multi-tenancy = biggest public cloud risk</li>
+              </ul>
+            </Card>
+            <Card className="p-4 bg-slate-800/30">
+              <h4 className="font-bold text-slate-200 mb-2">Virtualization</h4>
+              <ul className="text-xs text-slate-400 space-y-1.5">
+                <li><span className="text-purple-400 font-bold">Type-1 (bare-metal):</span> Runs directly on hardware</li>
+                <li><span className="text-purple-400 font-bold">Type-2 (hosted):</span> Runs on host OS</li>
+                <li>• <span className="text-slate-200">VM:</span> Full guest OS, strong isolation, heavier</li>
+                <li>• <span className="text-slate-200">Container:</span> Shares host kernel, lightweight</li>
+                <li>• <span className="text-slate-200">VM escape:</span> Breaking out of VM to host</li>
+              </ul>
+            </Card>
+            <Card className="p-4 bg-slate-800/30">
+              <h4 className="font-bold text-slate-200 mb-2">IoT Security</h4>
+              <ul className="text-xs text-slate-400 space-y-1.5">
+                <li>• <span className="text-slate-200">Default passwords</span> — rarely changed</li>
+                <li>• <span className="text-slate-200">Limited hardware</span> — can't support strong crypto</li>
+                <li>• <span className="text-slate-200">No auto-update</span> — firmware stays vulnerable</li>
+                <li>• <span className="text-slate-200">Mirai botnet:</span> exploited IoT default credentials</li>
+                <li>• Medical IoT: pacemakers often can't be patched</li>
+              </ul>
+            </Card>
+            <Card className="p-4 bg-slate-800/30">
+              <h4 className="font-bold text-slate-200 mb-2">Segmentation &amp; DMZ</h4>
+              <ul className="text-xs text-slate-400 space-y-1.5">
+                <li><span className="text-purple-400 font-bold">VLAN:</span> Logical segmentation on shared hardware</li>
+                <li><span className="text-purple-400 font-bold">DMZ:</span> Public servers between two firewalls</li>
+                <li><span className="text-purple-400 font-bold">Air gap:</span> No electronic connection to outside</li>
+                <li>• 802.1X = port-based NAC (RADIUS auth)</li>
+              </ul>
+            </Card>
+            <Card className="p-4 bg-slate-800/30">
+              <h4 className="font-bold text-slate-200 mb-2">Backup &amp; Physical Security</h4>
+              <ul className="text-xs text-slate-400 space-y-1.5">
+                <li><span className="text-purple-400 font-bold">3-2-1 Rule:</span> 3 copies, 2 media types, 1 offsite</li>
+                <li><span className="text-purple-400 font-bold">Incremental:</span> Changes since last backup</li>
+                <li><span className="text-purple-400 font-bold">Differential:</span> Changes since last FULL backup</li>
+                <li>• <span className="text-slate-200">Mantrap:</span> Double-door airlock prevents tailgating</li>
+                <li>• <span className="text-slate-200">Faraday cage:</span> Blocks electromagnetic signals</li>
+                <li>• <span className="text-slate-200">Class C fire:</span> Electrical — use CO2, NEVER water</li>
+              </ul>
+            </Card>
+          </div>
+        </section>
+
+        {/* ── 4. Network, Crypto & Ports ── */}
+        <section id="sec4" className="space-y-4 scroll-mt-20">
+          <div className="flex items-center gap-2 text-emerald-400 border-b border-slate-800 pb-2">
+            <RotateCcw className="w-5 h-5" />
+            <h3 className="text-xl font-bold uppercase tracking-wider">4 · Network, Crypto &amp; Ports</h3>
+            <span className="ml-auto text-xs text-slate-500 font-mono">30 test items</span>
+          </div>
+          <div className="grid md:grid-cols-3 gap-4">
+            <Card className="p-4 bg-slate-800/30">
+              <h4 className="font-bold text-slate-200 mb-2">Cryptography</h4>
+              <ul className="text-xs text-slate-400 space-y-1.5">
+                <li><span className="text-emerald-400 font-bold">Symmetric:</span> Same key for encrypt + decrypt. Fast. (AES)</li>
+                <li><span className="text-emerald-400 font-bold">Asymmetric:</span> Public key encrypts; private decrypts. (RSA, ECC)</li>
+                <li><span className="text-emerald-400 font-bold">Hashing:</span> One-way fingerprint; verifies integrity. (SHA-256)</li>
+                <li><span className="text-emerald-400 font-bold">Digital Signature:</span> Encrypt hash with private key → auth + non-repudiation</li>
+                <li>• <span className="text-slate-200">AES-GCM</span> provides confidentiality AND integrity</li>
+              </ul>
+            </Card>
+            <Card className="p-4 bg-slate-800/30">
+              <h4 className="font-bold text-slate-200 mb-2">PKI &amp; Certificates</h4>
+              <ul className="text-xs text-slate-400 space-y-1.5">
+                <li><span className="text-emerald-400 font-bold">CA:</span> Issues and signs digital certificates</li>
+                <li><span className="text-emerald-400 font-bold">CRL:</span> Certificate Revocation List</li>
+                <li><span className="text-emerald-400 font-bold">OCSP:</span> Real-time revocation check</li>
+                <li>• Certificate binds <span className="text-slate-200">public key to identity</span></li>
+                <li>• <span className="text-slate-200">PFS:</span> Perfect Forward Secrecy (ephemeral session keys)</li>
+              </ul>
+            </Card>
+            <Card className="p-4 bg-slate-800/30">
+              <h4 className="font-bold text-slate-200 mb-2">MFA &amp; Kerberos</h4>
+              <ul className="text-xs text-slate-400 space-y-1.5">
+                <li><span className="text-emerald-400 font-bold">MFA:</span> 2+ factors from different categories</li>
+                <li>• Something you <span className="text-slate-200">know</span> / <span className="text-slate-200">have</span> / <span className="text-slate-200">are</span></li>
+                <li><span className="text-emerald-400 font-bold">TOTP:</span> Time-based OTP (30s rotation)</li>
+                <li>• Kerberos: symmetric, KDC, tickets, port <span className="text-slate-200">88</span></li>
+                <li>• RADIUS: AAA protocol, port <span className="text-slate-200">1812/1813</span></li>
+              </ul>
+            </Card>
+            <Card className="p-4 bg-slate-800/30 md:col-span-2">
+              <h4 className="font-bold text-slate-200 mb-2">Port Numbers — NLC Must-Knows</h4>
+              <div className="grid grid-cols-3 md:grid-cols-4 gap-2 text-xs text-slate-400">
+                <div>22 SSH</div><div>53 DNS</div><div>80 HTTP</div><div>443 HTTPS</div>
+                <div>110 POP3</div><div>139 NetBIOS</div><div>1723 PPTP</div><div>143 IMAP</div>
+                <div>445 SMB</div><div>587 Submission</div><div>636 LDAPS</div><div>993 IMAPS</div>
+                <div>995 POP3S</div><div>1433 MSSQL</div><div>3389 RDP</div><div>88 Kerberos</div>
+                <div>161 SNMP</div><div>389 LDAP</div><div>465 SMTPS</div><div>123 NTP</div>
+                <div>67/68 DHCP</div><div>25 SMTP</div><div>21 FTP</div><div>23 Telnet</div>
+              </div>
+              <div class="mt-2 text-xs text-slate-500">⚠️ NLC trick: They'll pair wrong ports (e.g., "DNS uses TCP" — only partially true; primarily UDP)</div>
+            </Card>
+            <Card className="p-4 bg-slate-800/30">
+              <h4 className="font-bold text-slate-200 mb-2">Protocols &amp; OSI</h4>
+              <ul className="text-xs text-slate-400 space-y-1.5">
+                <li>• <span className="text-slate-200">Layer 7:</span> HTTP, DNS, SMTP, FTP</li>
+                <li>• <span className="text-slate-200">Layer 4:</span> TCP (reliable), UDP (connectionless)</li>
+                <li>• <span className="text-slate-200">Layer 3:</span> IP, ICMP, Router</li>
+                <li>• <span className="text-slate-200">Layer 2:</span> Switch, ARP, Ethernet</li>
+                <li>• <span className="text-slate-200">Layer 1:</span> Hub, Repeater, Cables</li>
+                <li>• <span className="text-slate-200">TCP handshake:</span> SYN → SYN-ACK → ACK</li>
+                <li>• <span className="text-slate-200">ARP:</span> IP to MAC resolution</li>
+              </ul>
+            </Card>
+            <Card className="p-4 bg-slate-800/30 md:col-span-2">
+              <h4 className="font-bold text-slate-200 mb-2">Forensics &amp; Linux Commands</h4>
+              <div className="grid md:grid-cols-2 gap-3 text-xs text-slate-400">
+                <ul className="space-y-1.5">
+                  <li className="text-slate-200 font-bold">Order of Volatility (most → least)</li>
+                  <li>1. CPU registers / cache</li>
+                  <li>2. RAM (running processes, network conns)</li>
+                  <li>3. /proc, network state</li>
+                  <li>4. Temporary filesystems</li>
+                  <li>5. Disk / filesystem</li>
+                  <li>6. Remote logs, monitoring</li>
+                  <li>7. Archival media (backups)</li>
+                </ul>
+                <ul className="space-y-1.5">
+                  <li className="text-slate-200 font-bold">Critical Linux Commands</li>
+                  <li>• <code>dd if=/dev/sda1 of=image.dd</code> — bit-stream imaging</li>
+                  <li>• <code>fsck</code> — filesystem integrity check/repair</li>
+                  <li>• <code>md5sum</code> / <code>sha256sum</code> — hash verification</li>
+                  <li>• <code>ps</code> — list running processes</li>
+                  <li>• <code>chmod</code> — change file permissions</li>
+                  <li>• <code>/proc</code> — live kernel/process data</li>
+                </ul>
+              </div>
+            </Card>
+            <Card className="p-4 bg-slate-800/30">
+              <h4 className="font-bold text-slate-200 mb-2">Forensics Concepts</h4>
+              <ul className="text-xs text-slate-400 space-y-1.5">
+                <li>• <span className="text-slate-200">Chain of custody:</span> documented control of evidence</li>
+                <li>• <span className="text-slate-200">Write-blocker:</span> prevents evidence modification</li>
+                <li>• <span className="text-slate-200">Live forensics:</span> collect from running system</li>
+                <li>• <span className="text-slate-200">Dead forensics:</span> image a powered-off system</li>
+                <li>• <span className="text-slate-200">dd connt:</span> count of bytes transferred (verify integrity)</li>
+              </ul>
+            </Card>
+          </div>
+        </section>
+
+        {/* ── 5. Operations, IR, Risk & Forensics ── */}
         <section id="sec5" className="space-y-4 scroll-mt-20">
           <div className="flex items-center gap-2 text-yellow-400 border-b border-slate-800 pb-2">
             <BarChart3 className="w-5 h-5" />
-            <h3 className="text-xl font-bold uppercase tracking-wider">5 · Security Operations &amp; Management</h3>
-            <span className="ml-auto text-xs text-slate-500 font-mono">10 test items</span>
+            <h3 className="text-xl font-bold uppercase tracking-wider">5 · Operations, IR, Risk &amp; Forensics</h3>
+            <span className="ml-auto text-xs text-slate-500 font-mono">30 test items</span>
           </div>
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-3 gap-4">
             <Card className="p-4 bg-slate-800/30">
-              <h4 className="font-bold text-slate-200 mb-2">Common Security Policies</h4>
-              <ul className="text-sm text-slate-400 space-y-1">
-                <li><span className="text-yellow-400 font-bold">AUP</span> — Acceptable Use: rules for company tech use.</li>
-                <li><span className="text-yellow-400 font-bold">BCP</span> — Business Continuity: keep business running during disaster.</li>
-                <li><span className="text-yellow-400 font-bold">DRP</span> — Disaster Recovery: restore IT systems after disaster.</li>
-                <li><span className="text-yellow-400 font-bold">IRP</span> — Incident Response: steps to handle a security breach.</li>
-                <li><span className="text-yellow-400 font-bold">Info Sec Policy</span> — Rules for protecting information assets.</li>
+              <h4 className="font-bold text-slate-200 mb-2">NIST Incident Response</h4>
+              <ul className="text-xs text-slate-400 space-y-1.5">
+                <li>1. <span className="text-slate-200">Preparation</span> — tools, training, IR plan</li>
+                <li>2. <span className="text-slate-200">Detection &amp; Analysis</span> — IDS, SIEM, triage</li>
+                <li>3. <span className="text-slate-200">Containment, Eradication, Recovery</span></li>
+                <li>4. <span className="text-slate-200">Post-Incident Activity</span> — lessons learned</li>
+                <li>• Containment = stop the spread</li>
+                <li>• Eradication = remove threat</li>
+                <li>• Recovery = restore systems</li>
               </ul>
             </Card>
             <Card className="p-4 bg-slate-800/30">
-              <h4 className="font-bold text-slate-200 mb-2">Firewall Types</h4>
-              <ul className="text-sm text-slate-400 space-y-1">
-                <li><span className="text-yellow-400 font-bold">Packet-Filtering:</span> Inspects headers (IP/port). Fastest, least smart.</li>
-                <li><span className="text-yellow-400 font-bold">Stateful:</span> Tracks connection state.</li>
-                <li><span className="text-yellow-400 font-bold">NGFW:</span> Deep Packet Inspection + app awareness + IDS/IPS.</li>
-                <li><span className="text-yellow-400 font-bold">WAF:</span> Protects web apps. Defends against SQLi &amp; XSS.</li>
+              <h4 className="font-bold text-slate-200 mb-2">DR / BCP</h4>
+              <ul className="text-xs text-slate-400 space-y-1.5">
+                <li><span className="text-yellow-400 font-bold">RPO:</span> Max acceptable DATA loss (time)</li>
+                <li><span className="text-yellow-400 font-bold">RTO:</span> Max acceptable DOWNTIME (time)</li>
+                <li><span className="text-yellow-400 font-bold">ALE:</span> SLE × ARO</li>
+                <li><span className="text-yellow-400 font-bold">SLE:</span> Asset Value × Exposure Factor</li>
+                <li><span className="text-yellow-400 font-bold">MTTR:</span> Mean Time to Repair</li>
+                <li>• <span className="text-slate-200">Hot site:</span> RTO = minutes/hours</li>
+                <li>• <span className="text-slate-200">Warm site:</span> RTO = hours/days</li>
+                <li>• <span className="text-slate-200">Cold site:</span> RTO = days/weeks</li>
+                <li>• BCP covers ALL business functions</li>
+                <li>• DRP covers only IT systems</li>
               </ul>
             </Card>
             <Card className="p-4 bg-slate-800/30">
-              <h4 className="font-bold text-slate-200 mb-2">Firewall Rules &amp; ACLs</h4>
-              <ul className="text-sm text-slate-400 space-y-1">
-                <li>• Rules are processed top-down; first match wins.</li>
-                <li>• ACL entries specify: source IP, dest IP, port, protocol, action.</li>
-                <li>• <span className="text-slate-200">Implicit deny all</span> — everything not explicitly allowed is dropped.</li>
+              <h4 className="font-bold text-slate-200 mb-2">Risk Treatment Options</h4>
+              <ul className="text-xs text-slate-400 space-y-1.5">
+                <li><span className="text-yellow-400 font-bold">Avoid:</span> Eliminate the risky activity</li>
+                <li><span className="text-yellow-400 font-bold">Mitigate:</span> Reduce likelihood/impact (firewall)</li>
+                <li><span className="text-yellow-400 font-bold">Transfer:</span> Shift to third party (insurance)</li>
+                <li><span className="text-yellow-400 font-bold">Accept:</span> Acknowledge and do nothing</li>
+                <li>• <span className="text-slate-200">Residual risk:</span> what remains after controls</li>
+                <li>• <span className="text-slate-200">Qualitative:</span> High/Med/Low ratings</li>
+                <li>• <span className="text-slate-200">Quantitative:</span> Dollar values (ALE, SLE)</li>
               </ul>
             </Card>
             <Card className="p-4 bg-slate-800/30">
-              <h4 className="font-bold text-slate-200 mb-2">Change Management &amp; Email Security</h4>
-              <ul className="text-sm text-slate-400 space-y-1">
-                <li><span className="text-yellow-400 font-bold">Change Mgmt:</span> Request → Review → Approve → Test → Deploy → Document.</li>
-                <li>Prevents unauthorized changes from introducing vulnerabilities.</li>
-                <li><span className="text-yellow-400 font-bold">SPF/DKIM/DMARC:</span> Authenticate email senders; stop spoofing.</li>
+              <h4 className="font-bold text-slate-200 mb-2">Firewalls (Evolution)</h4>
+              <ul className="text-xs text-slate-400 space-y-1.5">
+                <li><span className="text-yellow-400 font-bold">Packet-filtering:</span> L3, IP/port only</li>
+                <li><span className="text-yellow-400 font-bold">Stateful:</span> Tracks connection state</li>
+                <li><span className="text-yellow-400 font-bold">Proxy (app-layer):</span> Terminates, inspects L7</li>
+                <li><span className="text-yellow-400 font-bold">NGFW:</span> + DPI + IPS + app awareness</li>
+                <li><span className="text-yellow-400 font-bold">WAF:</span> Web app protection (SQLi, XSS)</li>
+                <li>• <span className="text-slate-200">Implicit deny all</span> — default drop</li>
+                <li>• <span className="text-slate-200">IDS:</span> detect + alert (passive)</li>
+                <li>• <span className="text-slate-200">IPS:</span> detect + block (inline)</li>
+              </ul>
+            </Card>
+            <Card className="p-4 bg-slate-800/30">
+              <h4 className="font-bold text-slate-200 mb-2">SIEM &amp; SOC</h4>
+              <ul className="text-xs text-slate-400 space-y-1.5">
+                <li>• <span className="text-slate-200">SIEM:</span> Aggregates + correlates logs</li>
+                <li>• <span className="text-slate-200">SOC:</span> Monitors + responds to incidents</li>
+                <li>• <span className="text-slate-200">SOAR:</span> Orchestration, Automation, Response</li>
+                <li>• <span className="text-slate-200">STIX/TAXII:</span> Threat intel sharing standards</li>
+                <li>• <span className="text-slate-200">Playbook:</span> Documented response procedures</li>
+                <li>• <span className="text-slate-200">False positive:</span> Benign flagged as malicious</li>
+              </ul>
+            </Card>
+            <Card className="p-4 bg-slate-800/30">
+              <h4 className="font-bold text-slate-200 mb2">Policies &amp; Procedures</h4>
+              <ul className="text-xs text-slate-400 space-y-1.5">
+                <li><span className="text-yellow-400 font-bold">AUP:</span> Acceptable Use Policy</li>
+                <li><span className="text-yellow-400 font-bold">BCP:</span> Business Continuity Plan</li>
+                <li><span className="text-yellow-400 font-bold">DRP:</span> Disaster Recovery Plan</li>
+                <li><span className="text-yellow-400 font-bold">IRP:</span> Incident Response Plan</li>
+                <li><span className="text-yellow-400 font-bold">Change Mgmt:</span> Request→Review→Approve→Test→Deploy</li>
+                <li>• <span className="text-slate-200">SPF/DKIM/DMARC:</span> Email authentication</li>
+                <li>• <span className="text-slate-200">802.1X:</span> Port-based NAC</li>
               </ul>
             </Card>
           </div>
         </section>
 
-        {/* ── 6. Security Protocols and Threat Mitigation ── */}
+        {/* ── 6. Protocols, Mitigation & Laws ── */}
         <section id="sec6" className="space-y-4 scroll-mt-20">
           <div className="flex items-center gap-2 text-cyan-400 border-b border-slate-800 pb-2">
             <Info className="w-5 h-5" />
-            <h3 className="text-xl font-bold uppercase tracking-wider">6 · Security Protocols &amp; Threat Mitigation</h3>
-            <span className="ml-auto text-xs text-slate-500 font-mono">20 test items</span>
+            <h3 className="text-xl font-bold uppercase tracking-wider">6 · Protocols, Mitigation &amp; Laws</h3>
+            <span className="ml-auto text-xs text-slate-500 font-mono">25 test items</span>
           </div>
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-3 gap-4">
             <Card className="p-4 bg-slate-800/30">
               <h4 className="font-bold text-slate-200 mb-2">Secure Protocols</h4>
-              <ul className="text-sm text-slate-400 space-y-1">
-                <li><span className="text-cyan-400 font-bold">SSH</span> — Secure remote terminal. Port 22. Replaces Telnet.</li>
-                <li><span className="text-cyan-400 font-bold">HTTPS</span> — HTTP over TLS. Port 443. Encrypts web traffic.</li>
-                <li><span className="text-cyan-400 font-bold">TLS</span> — Encrypts data in transit (successor to SSL).</li>
-                <li><span className="text-cyan-400 font-bold">WPA2/WPA3</span> — Secure Wi-Fi. AES encryption. WEP is obsolete.</li>
-                <li><span className="text-cyan-400 font-bold">SFTP/FTPS</span> — Secure file transfer protocols.</li>
+              <ul className="text-xs text-slate-400 space-y-1.5">
+                <li><span className="text-cyan-400 font-bold">SSH</span> — Port 22. Replaces Telnet.</li>
+                <li><span className="text-cyan-400 font-bold">HTTPS</span> — HTTP over TLS. Port 443.</li>
+                <li><span className="text-cyan-400 font-bold">TLS</span> — Encrypts data in transit (SSL successor)</li>
+                <li><span className="text-cyan-400 font-bold">WPA3</span> — SAE handshake, PFS. Current best.</li>
+                <li><span className="text-cyan-400 font-bold">SFTP/FTPS</span> — Secure file transfer</li>
+                <li><span className="text-cyan-400 font-bold">IPsec</span> — L3 VPN (Tunnel vs Transport mode)</li>
+                <li><span className="text-cyan-400 font-bold">DNSSEC</span> — Signed DNS records</li>
               </ul>
             </Card>
             <Card className="p-4 bg-slate-800/30">
-              <h4 className="font-bold text-slate-200 mb-2">IDS vs. IPS</h4>
-              <ul className="text-sm text-slate-400 space-y-1">
-                <li><span className="text-cyan-400 font-bold">IDS</span> — Monitors and <span className="text-slate-200">alerts</span>. Passive — does NOT block.</li>
-                <li><span className="text-cyan-400 font-bold">IPS</span> — Sits inline; can <span className="text-slate-200">actively block</span> malicious traffic.</li>
+              <h4 className="font-bold text-slate-200 mb2">Obfuscation &amp; Data Protection</h4>
+              <ul className="text-xs text-slate-400 space-y-1.5">
+                <li><span className="text-cyan-400 font-bold">Tokenization:</span> CC number → token (vault maps back)</li>
+                <li><span className="text-cyan-400 font-bold">Data Masking:</span> Realistic fake data for testing</li>
+                <li><span className="text-cyan-400 font-bold">Steganography:</span> Hide message in image/audio</li>
+                <li><span className="text-cyan-400 font-bold">Obfuscation:</span> Make code hard to read</li>
+                <li>• <span className="text-slate-200">Tokenization vs Encryption:</span> No math relationship</li>
+                <li>• <span className="text-slate-200">Salting:</span> Random value per password before hash</li>
               </ul>
             </Card>
             <Card className="p-4 bg-slate-800/30">
-              <h4 className="font-bold text-slate-200 mb-2">Obfuscation Methods</h4>
-              <ul className="text-sm text-slate-400 space-y-1">
-                <li><span className="text-cyan-400 font-bold">Tokenization:</span> Sensitive data → non-sensitive token.</li>
-                <li><span className="text-cyan-400 font-bold">Data Masking:</span> Real data → fake-but-realistic data.</li>
-                <li><span className="text-cyan-400 font-bold">Steganography:</span> Hide a message inside a file (image, audio).</li>
-                <li><span className="text-cyan-400 font-bold">Obfuscation:</span> Make code hard to read.</li>
+              <h4 className="font-bold text-slate-200 mb-2">Pen Testing</h4>
+              <ul className="text-xs text-slate-400 space-y-1.5">
+                <li><span className="text-cyan-400 font-bold">Black Box:</span> No prior knowledge (external attacker)</li>
+                <li><span className="text-cyan-400 font-bold">White Box:</span> Full knowledge (source code, diagrams)</li>
+                <li><span className="text-cyan-400 font-bold">Gray Box:</span> Partial knowledge</li>
+                <li>• <span className="text-slate-200">Vulnerability scan:</span> Automated, no exploitation</li>
+                <li>• <span className="text-slate-200">Pen test:</span> Active exploitation, authorized</li>
+                <li>• <span className="text-slate-200">Fuzzing:</span> Invalid input to find vulnerabilities</li>
               </ul>
             </Card>
-            <Card className="p-4 bg-slate-800/30">
-              <h4 className="font-bold text-slate-200 mb-2">Digital Certificates &amp; CA</h4>
-              <ul className="text-sm text-slate-400 space-y-1">
-                <li><span className="text-cyan-400 font-bold">CA</span> — Certificate Authority; trusted third party that signs certs.</li>
-                <li><span className="text-cyan-400 font-bold">Digital Cert:</span> Binds public key to identity; signed by CA.</li>
-                <li><span className="text-cyan-400 font-bold">PKI:</span> The overall system of CAs, certs, and policies.</li>
-              </ul>
-            </Card>
-            <Card className="p-4 bg-slate-800/30 md:col-span-2">
-              <h4 className="font-bold text-slate-200 mb-2">Pen Testing, Patches &amp; Passwords</h4>
-              <div className="grid md:grid-cols-3 gap-4 text-xs text-slate-400">
-                <ul className="space-y-1">
-                  <li className="text-slate-200 font-bold mb-1">Pen Testing</li>
-                  <li>• Black Box — no prior knowledge.</li>
-                  <li>• White Box — full knowledge.</li>
-                  <li>• Gray Box — partial knowledge.</li>
-                  <li>Goal: find &amp; fix vulnerabilities before attackers do.</li>
-                </ul>
-                <ul className="space-y-1">
-                  <li className="text-slate-200 font-bold mb-1">Patch Management</li>
-                  <li>• Critical patches → apply within 30 days.</li>
-                  <li>• Unpatched software = #1 attack vector.</li>
-                  <li>• Version control: audit changes, rollback if needed.</li>
-                </ul>
-                <ul className="space-y-1">
-                  <li className="text-slate-200 font-bold mb-1">Strong Passwords</li>
-                  <li>• ≥12 characters.</li>
-                  <li>• Mix: upper, lower, numbers, symbols.</li>
-                  <li>• No dictionary words or personal info.</li>
-                  <li>• Unique per account. Use a password manager.</li>
-                </ul>
+            <Card className="p-4 bg-slate-800/30 md:col-span-3">
+              <h4 className="font-bold text-slate-200 mb-2">Laws &amp; Regulatory Frameworks</h4>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-slate-400">
+                <div><span className="text-cyan-400 font-bold block">HIPAA</span>Healthcare PHI. Breach notify 60 days.</div>
+                <div><span className="text-cyan-400 font-bold block">FERPA</span>Student education records. Rights transfer at 18.</div>
+                <div><span className="text-cyan-400 font-bold block">COPPA</span>Children under 13. Parental consent required.</div>
+                <div><span className="text-cyan-400 font-bold block">GDPR</span>EU data privacy. Fines: 4% global revenue or €20M.</div>
+                <div><span className="text-cyan-400 font-bold block">SOX</span>Financial reporting. CEO certifies controls.</div>
+                <div><span className="text-cyan-400 font-bold block">PCI DSS</span>Cardholder data. 12 requirements. Mandatory.</div>
+                <div><span className="text-cyan-400 font-bold block">CFAA</span>Unauthorized access to computers. Federal crime.</div>
+                <div><span className="text-cyan-400 font-bold block">FISMA</span>Federal agency security. NIST framework.</div>
+                <div><span className="text-cyan-400 font-bold block">GLBA</span>Financial data. Opt-out for data sharing.</div>
+                <div><span className="text-cyan-400 font-bold block">CAN-SPAM</span>Commercial email. Opt-out + address required.</div>
+                <div><span className="text-cyan-400 font-bold block">DMCA</span>DRM circumvention prohibited.</div>
+                <div><span className="text-cyan-400 font-bold block">CIRCIA</span>Critical infrastructure. 72hr breach report.</div>
               </div>
+              <div className="mt-2 text-xs text-slate-500">⚠️ NLC trap: "FERPA protects healthcare" = FALSE. "HIPAA protects students" = FALSE. Know which law protects WHICH data.</div>
             </Card>
           </div>
         </section>
