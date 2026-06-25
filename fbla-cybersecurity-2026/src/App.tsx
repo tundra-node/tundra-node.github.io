@@ -652,17 +652,30 @@ export default function App() {
       setQuizType(type);
     };
 
+    // Separate timer state to avoid re-rendering the entire quiz every second
+    const [timerDisplay, setTimerDisplay] = useState(0);
+    
     useEffect(() => {
       if (!quizState || quizState.isFinished) return;
+      setTimerDisplay(quizState.timeRemaining);
       const timer = setInterval(() => {
-        setQuizState(prev => {
-          if (!prev) return null;
-          if (prev.timeRemaining <= 0) return { ...prev, isFinished: true };
-          return { ...prev, timeRemaining: prev.timeRemaining - 1 };
+        setTimerDisplay(prev => {
+          if (prev <= 0) {
+            clearInterval(timer);
+            return 0;
+          }
+          return prev - 1;
         });
       }, 1000);
       return () => clearInterval(timer);
-    }, [quizState?.isFinished]);
+    }, [quizState?.isFinished, quizState?.timeRemaining === undefined]);
+
+    // Auto-finish when timer hits 0
+    useEffect(() => {
+      if (timerDisplay <= 0 && quizState && !quizState.isFinished) {
+        setQuizState(prev => prev ? { ...prev, isFinished: true } : null);
+      }
+    }, [timerDisplay]);
 
     const handleAnswer = (displayIndex: number) => {
       if (!quizState) return;
@@ -1141,7 +1154,7 @@ export default function App() {
             quizState!.timeRemaining < 60 ? "text-red-500 animate-pulse" : "text-blue-400"
           )}>
             <Clock className="w-4 h-4" />
-            {formatTime(quizState!.timeRemaining)}
+            {formatTime(timerDisplay)}
           </div>
           <Button variant="ghost" size="sm" onClick={() => setQuizType(null)}>Exit</Button>
         </div>
