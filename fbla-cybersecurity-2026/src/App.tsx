@@ -654,13 +654,18 @@ export default function App() {
 
     // Separate timer state to avoid re-rendering the entire quiz every second
     const [timerDisplay, setTimerDisplay] = useState(0);
+    const [timerStarted, setTimerStarted] = useState(false);
     const timerRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
     
     // Start timer when quiz begins, stop when finished
     useEffect(() => {
-      if (!quizState || quizState.isFinished) return;
+      if (!quizState || quizState.isFinished) {
+        setTimerStarted(false);
+        return;
+      }
       // Initialize display from quiz state
       setTimerDisplay(quizState.timeRemaining);
+      setTimerStarted(true);
       // Clear any existing timer
       if (timerRef.current) clearInterval(timerRef.current);
       // Start countdown
@@ -678,9 +683,9 @@ export default function App() {
       };
     }, [quizState?.isFinished]);
 
-    // Auto-finish when timer hits 0
+    // Auto-finish when timer hits 0 (only if timer was actually started)
     useEffect(() => {
-      if (timerDisplay === 0 && quizState && !quizState.isFinished) {
+      if (timerDisplay === 0 && timerStarted && quizState && !quizState.isFinished) {
         if (timerRef.current) clearInterval(timerRef.current);
         setQuizState(prev => prev ? { ...prev, isFinished: true } : null);
       }
