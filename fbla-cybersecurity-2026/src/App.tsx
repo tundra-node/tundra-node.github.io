@@ -160,6 +160,41 @@ export default function App() {
     localStorage.setItem('fbla_cyber_progress', JSON.stringify(progress));
   }, [progress]);
 
+  // --- Timer hooks (moved to App level to prevent remount reset) ---
+  const [timerDisplay, setTimerDisplay] = useState(0);
+  const [timerStarted, setTimerStarted] = useState(false);
+  const timerRef = React.useRef(null);
+
+  useEffect(() => {
+    if (!quizState || quizState.isFinished) {
+      setTimerStarted(false);
+      return;
+    }
+    setTimerDisplay(quizState.timeRemaining);
+    setTimerStarted(true);
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setTimerDisplay(prev => {
+        if (prev <= 1) {
+          if (timerRef.current) clearInterval(timerRef.current);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [quizState?.isFinished]);
+
+  useEffect(() => {
+    if (timerDisplay === 0 && timerStarted && quizState && !quizState.isFinished) {
+      if (timerRef.current) clearInterval(timerRef.current);
+      setQuizState(prev => prev ? { ...prev, isFinished: true } : null);
+    }
+  }, [timerDisplay]);
+
+
   // --- Quiz start functions ---
   const startSpeedQuiz = () => {
     const pool = [...STUDY_DATA.questions].sort(() => Math.random() - 0.5).slice(0, 10);
@@ -224,7 +259,155 @@ export default function App() {
     setMode('quiz');
   };
 
+  // --- QuizView functions (moved to App level) ---
+  const getWeakCategories = (): string[] => {
+    const entries = (Object.entries(progress) as [string, { total: number; correct: number }][])
+      .filter(([, d]) => d.total > 0)
+      .sort((a, b) => (a[1].correct / a[1].total) - (b[1].correct / b[1].total));
+    if (entries.length >= 2) return entries.slice(0, 2).map(([cat]) => cat);
+    if (entries.length === 1) return [entries[0][0], CATEGORIES.NETWORK];
+    return [CATEGORIES.NETWORK, CATEGORIES.OPERATIONS];
+  };
+
+  const startWeakDrill = () => {
+    const cats = getWeakCategories();
+    setSelectedCategories(cats);
+    setDrillLabel(`Weak Areas: ${cats.map(c => c.split(' ').slice(-1)[0]).join(' + ')}`);
+    const pool = STUDY_DATA.questions
+      .filter(q => cats.includes(q.category))
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 20);
+    setQuizState({
+      questions: pool,
+      shuffledOptions: pool.map(q => shuffleOptions(q)),
+      currentIndex: 0,
+      answers: new Array(pool.length).fill(null),
+      isFinished: false,
+      startTime: Date.now(),
+      timeRemaining: 15 * 60,
+      reviewMode: true,
+    });
+    setQuizType('drill');
+  };
+
+  const toggleCategory = (cat: string) => {
+    setSelectedCategories(prev =>
+      prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
+    );
+  };
+
+  const startQuiz = (type: QuizType) => {
+    const activeCats = selectedCategories.length > 0 ? selectedCategories : null;
+    let pool;
+    if (type === 'full') {
+      pool = [...STUDY_DATA.questions].sort(() => Math.random() - 0.5).slice(0, 100);
+    } else {
+      pool = STUDY_DATA.questions
+          .filter(q => !activeCats || activeCats.includes(q.category))
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 20);
+    }
+    setDrillLabel('');
+    setQuizState({
+      questions: pool,
+      shuffledOptions: pool.map(q => shuffleOptions(q)),
+      currentIndex: 0,
+      answers: new Array(pool.length).fill(null),
+      isFinished: false,
+      startTime: Date.now(),
+      timeRemaining: type === 'full' ? 50 * 60 : 15 * 60,
+      reviewMode,
+    });
+    setQuizType(type);
+  };
+
+  const handleAnswer = (displayIndex: number) => {
+    if (!quizState) return;
+    const newAnswers = [...quizState.answers];
+    const originalIndex = quizState.shuffledOptions[quizState.currentIndex][displayIndex];
+    newAnswers[quizState.currentIndex] = originalIndex;
+    setQuizState({ ...quizState, answers: newAnswers });
+  };
+
+  const finishQuiz = () => {
+    if (!quizState) return;
+    const newProgress = { ...progress };
+    const bankRaw = localStorage.getItem('fbla_wrong_bank');
+    const bank = bankRaw ? JSON.parse(bankRaw) : [];
+    let currentStreak = 0;
+    let maxStreak = 0;
+    quizState.questions.forEach((q, idx) => {
+      const answer = quizState.answers[idx];
+      if (answer === null) return;
+      newProgress[q.category].total += 1;
+      if (answer === q.correctAnswer) {
+        newProgress[q.category].correct += 1;
+        currentStreak++;
+        if (currentStreak > maxStreak) maxStreak = currentStreak;
+        const pos = bank.indexOf(q.id);
+        if (pos !== -1) bank.splice(pos, 1);
+      } else {
+        currentStreak = 0;
+        if (!bank.includes(q.id)) bank.push(q.id);
+      }
+    });
+    localStorage.setItem('fbla_wrong_bank', JSON.stringify(bank));
+
+    const bestStreak = parseInt(localStorage.getItem('fbla_best_streak') || '0', 10);
+    localStorage.setItem('fbla_streak', String(currentStreak));
+    if (maxStreak > bestStreak) {
+      localStorage.setItem('fbla_best_streak', String(maxStreak));
+    }
+
+    setProgress(newProgress);
+
+    const scoreCalc = quizState.answers.filter((a, i) => a === quizState.questions[i].correctAnswer).length;
+    const skippedCalc = quizState.answers.filter(a => a === null).length;
+    const maxDurationCalc = quizType === 'full' ? 50 * 60 : 15 * 60;
+    const elapsedCalc = Math.min(Math.floor((Date.now() - quizState.startTime) / 1000), maxDurationCalc);
+    const pctCalc = skippedCalc < quizState.questions.length ? Math.round((scoreCalc / quizState.questions.length) * 100) : 0;
+
+    const historyRaw = localStorage.getItem('fbla_session_history');
+    const history = historyRaw ? JSON.parse(historyRaw) : [];
+    history.unshift({
+      date: new Date().toISOString(),
+      type: quizType === 'full' ? 'Full Exam' : quizType === 'speed' ? 'Speed Quiz' : quizType === 'cram' ? 'Cram' : 'Drill',
+      score: scoreCalc,
+      total: quizState.questions.length,
+      pct: pctCalc,
+      time: elapsedCalc,
+    });
+    if (history.length > 50) history.pop();
+    localStorage.setItem('fbla_session_history', JSON.stringify(history));
+
+    setQuizState({ ...quizState, isFinished: true });
+  };
+
+  const drillMissed = () => {
+    if (!quizState) return;
+    const missedIds = quizState.questions
+      .filter((_, i) => quizState.answers[i] !== quizState.questions[i].correctAnswer)
+      .map(q => q.id);
+    if (missedIds.length === 0) return;
+    const pool = STUDY_DATA.questions
+      .filter(q => missedIds.includes(q.id))
+      .sort(() => Math.random() - 0.5);
+    setDrillLabel(`Missed Review (${pool.length} q)`);
+    setQuizState({
+      questions: pool,
+      shuffledOptions: pool.map(q => shuffleOptions(q)),
+      currentIndex: 0,
+      answers: new Array(pool.length).fill(null),
+      isFinished: false,
+      startTime: Date.now(),
+      timeRemaining: 15 * 60,
+      reviewMode: true,
+    });
+    setQuizType('drill');
+  };
+
   // --- Sub-Views ---
+
 
   const HomeView = () => {
     const [timeLeft, setTimeLeft] = useState(() => {
@@ -588,176 +771,7 @@ export default function App() {
     );
   };
 
-  const QuizView = () => {
-    // Weak areas: bottom 2 categories by accuracy (min 1 attempt), else fallback
-    const getWeakCategories = (): string[] => {
-      const entries = (Object.entries(progress) as [string, { total: number; correct: number }][])
-        .filter(([, d]) => d.total > 0)
-        .sort((a, b) => (a[1].correct / a[1].total) - (b[1].correct / b[1].total));
-      if (entries.length >= 2) return entries.slice(0, 2).map(([cat]) => cat);
-      if (entries.length === 1) return [entries[0][0], CATEGORIES.NETWORK];
-      return [CATEGORIES.NETWORK, CATEGORIES.OPERATIONS];
-    };
-
-    const startWeakDrill = () => {
-      const cats = getWeakCategories();
-      setSelectedCategories(cats);
-      setDrillLabel(`Weak Areas: ${cats.map(c => c.split(' ').slice(-1)[0]).join(' + ')}`);
-      const pool = STUDY_DATA.questions
-        .filter(q => cats.includes(q.category))
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 20);
-      setQuizState({
-        questions: pool,
-        shuffledOptions: pool.map(q => shuffleOptions(q)),
-        currentIndex: 0,
-        answers: new Array(pool.length).fill(null),
-        isFinished: false,
-        startTime: Date.now(),
-        timeRemaining: 15 * 60,
-        reviewMode: true,
-      });
-      setQuizType('drill');
-    };
-
-    const toggleCategory = (cat: string) => {
-      setSelectedCategories(prev =>
-        prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
-      );
-    };
-
-    const startQuiz = (type: QuizType) => {
-      const activeCats = selectedCategories.length > 0 ? selectedCategories : null;
-      let pool;
-      if (type === 'full') {
-        pool = [...STUDY_DATA.questions].sort(() => Math.random() - 0.5).slice(0, 100);
-      } else {
-        pool = STUDY_DATA.questions
-            .filter(q => !activeCats || activeCats.includes(q.category))
-            .sort(() => Math.random() - 0.5)
-            .slice(0, 20);
-      }
-      setDrillLabel('');
-
-      setQuizState({
-        questions: pool,
-        shuffledOptions: pool.map(q => shuffleOptions(q)),
-        currentIndex: 0,
-        answers: new Array(pool.length).fill(null),
-        isFinished: false,
-        startTime: Date.now(),
-        timeRemaining: type === 'full' ? 50 * 60 : 15 * 60,
-        reviewMode,
-      });
-      setQuizType(type);
-    };
-
-    // Separate timer state to avoid re-rendering the entire quiz every second
-    const [timerDisplay, setTimerDisplay] = useState(0);
-    const [timerStarted, setTimerStarted] = useState(false);
-    const timerRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
-    
-    // Start timer when quiz begins, stop when finished
-    useEffect(() => {
-      if (!quizState || quizState.isFinished) {
-        setTimerStarted(false);
-        return;
-      }
-      // Initialize display from quiz state
-      setTimerDisplay(quizState.timeRemaining);
-      setTimerStarted(true);
-      // Clear any existing timer
-      if (timerRef.current) clearInterval(timerRef.current);
-      // Start countdown
-      timerRef.current = setInterval(() => {
-        setTimerDisplay(prev => {
-          if (prev <= 1) {
-            if (timerRef.current) clearInterval(timerRef.current);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-      return () => {
-        if (timerRef.current) clearInterval(timerRef.current);
-      };
-    }, [quizState?.isFinished]);
-
-    // Auto-finish when timer hits 0 (only if timer was actually started)
-    useEffect(() => {
-      if (timerDisplay === 0 && timerStarted && quizState && !quizState.isFinished) {
-        if (timerRef.current) clearInterval(timerRef.current);
-        setQuizState(prev => prev ? { ...prev, isFinished: true } : null);
-      }
-    }, [timerDisplay]);
-
-    const handleAnswer = (displayIndex: number) => {
-      if (!quizState) return;
-      const newAnswers = [...quizState.answers];
-      // Map display index to original option index using the shuffled mapping
-      const originalIndex = quizState.shuffledOptions[quizState.currentIndex][displayIndex];
-      newAnswers[quizState.currentIndex] = originalIndex;
-      setQuizState({ ...quizState, answers: newAnswers });
-    };
-
-    const finishQuiz = () => {
-      if (!quizState) return;
-      const newProgress = { ...progress };
-      const bankRaw = localStorage.getItem('fbla_wrong_bank');
-      const bank: string[] = bankRaw ? JSON.parse(bankRaw) : [];
-      let currentStreak = 0;
-      let maxStreak = 0;
-      quizState.questions.forEach((q, idx) => {
-        const answer = quizState.answers[idx];
-        if (answer === null) return;
-        newProgress[q.category].total += 1;
-        if (answer === q.correctAnswer) {
-          newProgress[q.category].correct += 1;
-          currentStreak++;
-          if (currentStreak > maxStreak) maxStreak = currentStreak;
-          const pos = bank.indexOf(q.id);
-          if (pos !== -1) bank.splice(pos, 1); // graduated out of bank
-        } else {
-          currentStreak = 0; // reset streak on wrong answer
-          if (!bank.includes(q.id)) bank.push(q.id); // add to bank
-        }
-      });
-      localStorage.setItem('fbla_wrong_bank', JSON.stringify(bank));
-      
-      // Update streak
-      const bestStreak = parseInt(localStorage.getItem('fbla_best_streak') || '0', 10);
-      localStorage.setItem('fbla_streak', String(currentStreak));
-      if (maxStreak > bestStreak) {
-        localStorage.setItem('fbla_best_streak', String(maxStreak));
-      }
-      
-      setProgress(newProgress);
-      
-      // Calculate score for history recording
-      const scoreCalc = quizState.answers.filter((a, i) => a === quizState.questions[i].correctAnswer).length;
-      const skippedCalc = quizState.answers.filter(a => a === null).length;
-      const maxDurationCalc = quizType === 'full' ? 50 * 60 : 15 * 60;
-      const elapsedCalc = Math.min(Math.floor((Date.now() - quizState.startTime) / 1000), maxDurationCalc);
-      const pctCalc = skippedCalc < quizState.questions.length ? Math.round((scoreCalc / quizState.questions.length) * 100) : 0;
-      
-      // Record session history
-      const historyRaw = localStorage.getItem('fbla_session_history');
-      const history: Array<{ date: string; type: string; score: number; total: number; pct: number; time: number }> = historyRaw ? JSON.parse(historyRaw) : [];
-      history.unshift({
-        date: new Date().toISOString(),
-        type: quizType === 'full' ? 'Full Exam' : quizType === 'speed' ? 'Speed Quiz' : quizType === 'cram' ? 'Cram' : 'Drill',
-        score: scoreCalc,
-        total: quizState.questions.length,
-        pct: pctCalc,
-        time: elapsedCalc,
-      });
-      // Keep last 50 sessions
-      if (history.length > 50) history.pop();
-      localStorage.setItem('fbla_session_history', JSON.stringify(history));
-      
-      setQuizState({ ...quizState, isFinished: true });
-    };
-
+  function renderQuizView() {
     if (!quizType) {
       return (
         <div className="max-w-2xl mx-auto py-12 px-4 space-y-8">
@@ -1226,7 +1240,7 @@ export default function App() {
         </div>
       </div>
     );
-  };
+  }
 
   const exportData = () => {
     const payload = {
@@ -1998,7 +2012,7 @@ export default function App() {
           >
             {mode === 'home' && <HomeView />}
             {mode === 'flashcards' && <FlashcardView />}
-            {mode === 'quiz' && <QuizView />}
+            {mode === 'quiz' && renderQuizView()}
             {mode === 'progress' && <ProgressView />}
             {mode === 'cheat-sheet' && <CheatSheetView />}
           </motion.div>
