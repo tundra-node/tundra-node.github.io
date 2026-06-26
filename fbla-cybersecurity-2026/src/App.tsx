@@ -148,7 +148,13 @@ export default function App() {
   const [reviewMode, setReviewMode] = useState(true);
   const [progress, setProgress] = useState<ProgressData>(() => {
     const saved = localStorage.getItem('fbla_cyber_progress');
-    if (saved) return JSON.parse(saved);
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        // corrupted data — fall through to initial
+      }
+    }
     const initial: ProgressData = {};
     Object.values(CATEGORIES).forEach(cat => {
       initial[cat] = { total: 0, correct: 0 };
@@ -215,7 +221,12 @@ export default function App() {
 
   const startCramMode = () => {
     const bankRaw = localStorage.getItem('fbla_wrong_bank');
-    const bank: string[] = bankRaw ? JSON.parse(bankRaw) : [];
+    let bank: string[] = [];
+    try {
+      bank = bankRaw ? JSON.parse(bankRaw) : [];
+    } catch {
+      bank = [];
+    }
     if (bank.length === 0) {
       alert('No wrong answers saved yet! Take a quiz first.');
       return;
@@ -307,6 +318,10 @@ export default function App() {
           .sort(() => Math.random() - 0.5)
           .slice(0, 20);
     }
+    if (pool.length === 0) {
+      alert('No questions match the selected categories. Please select at least one category with questions.');
+      return;
+    }
     setDrillLabel('');
     setQuizState({
       questions: pool,
@@ -323,6 +338,8 @@ export default function App() {
 
   const handleAnswer = (displayIndex: number) => {
     if (!quizState) return;
+    if (quizState.currentIndex < 0 || quizState.currentIndex >= quizState.shuffledOptions.length) return;
+    if (displayIndex < 0 || displayIndex >= quizState.shuffledOptions[quizState.currentIndex].length) return;
     const newAnswers = [...quizState.answers];
     const originalIndex = quizState.shuffledOptions[quizState.currentIndex][displayIndex];
     newAnswers[quizState.currentIndex] = originalIndex;
@@ -331,9 +348,18 @@ export default function App() {
 
   const finishQuiz = () => {
     if (!quizState) return;
+    if (quizState.questions.length === 0) {
+      setQuizState({ ...quizState, isFinished: true });
+      return;
+    }
     const newProgress = { ...progress };
     const bankRaw = localStorage.getItem('fbla_wrong_bank');
-    const bank = bankRaw ? JSON.parse(bankRaw) : [];
+    let bank: string[] = [];
+    try {
+      bank = bankRaw ? JSON.parse(bankRaw) : [];
+    } catch {
+      bank = [];
+    }
     let currentStreak = 0;
     let maxStreak = 0;
     quizState.questions.forEach((q, idx) => {
@@ -365,10 +391,15 @@ export default function App() {
     const skippedCalc = quizState.answers.filter(a => a === null).length;
     const maxDurationCalc = quizType === 'full' ? 50 * 60 : 15 * 60;
     const elapsedCalc = Math.min(Math.floor((Date.now() - quizState.startTime) / 1000), maxDurationCalc);
-    const pctCalc = skippedCalc < quizState.questions.length ? Math.round((scoreCalc / quizState.questions.length) * 100) : 0;
+    const pctCalc = quizState.questions.length > 0 && skippedCalc < quizState.questions.length ? Math.round((scoreCalc / quizState.questions.length) * 100) : 0;
 
     const historyRaw = localStorage.getItem('fbla_session_history');
-    const history = historyRaw ? JSON.parse(historyRaw) : [];
+    let history: Array<{ date: string; type: string; score: number; total: number; pct: number; time: number }> = [];
+    try {
+      history = historyRaw ? JSON.parse(historyRaw) : [];
+    } catch {
+      history = [];
+    }
     history.unshift({
       date: new Date().toISOString(),
       type: quizType === 'full' ? 'Full Exam' : quizType === 'speed' ? 'Speed Quiz' : quizType === 'cram' ? 'Cram' : 'Drill',
@@ -386,7 +417,7 @@ export default function App() {
   const drillMissed = () => {
     if (!quizState) return;
     const missedIds = quizState.questions
-      .filter((_, i) => quizState.answers[i] !== quizState.questions[i].correctAnswer)
+      .filter((_, i) => quizState.answers[i] !== null && quizState.answers[i] !== quizState.questions[i].correctAnswer)
       .map(q => q.id);
     if (missedIds.length === 0) return;
     const pool = STUDY_DATA.questions
@@ -838,7 +869,12 @@ export default function App() {
             {(() => {
               const cats = getWeakCategories();
               const bankRaw = localStorage.getItem('fbla_wrong_bank');
-              const bankCount = bankRaw ? JSON.parse(bankRaw).length : 0;
+              let bankCount = 0;
+              try {
+                bankCount = bankRaw ? JSON.parse(bankRaw).length : 0;
+              } catch {
+                bankCount = 0;
+              }
               return (
                 <div className="grid sm:grid-cols-2 gap-4">
                   <Card className="p-5 border-red-500/20 hover:border-red-500/40 transition-all">
@@ -865,7 +901,12 @@ export default function App() {
                       className="w-full"
                       disabled={bankCount === 0}
                       onClick={() => {
-                        const ids: string[] = JSON.parse(localStorage.getItem('fbla_wrong_bank') ?? '[]');
+                        let ids: string[] = [];
+                        try {
+                          ids = JSON.parse(localStorage.getItem('fbla_wrong_bank') ?? '[]');
+                        } catch {
+                          ids = [];
+                        }
                         const pool = STUDY_DATA.questions
                           .filter(q => ids.includes(q.id))
                           .sort(() => Math.random() - 0.5)
@@ -943,7 +984,7 @@ export default function App() {
       });
       const formatTime = (s: number) => `${Math.floor(s / 60)}m ${(s % 60).toString().padStart(2,'0')}s`;
       const missedIds = quizState.questions
-        .filter((_, i) => quizState.answers[i] !== quizState.questions[i].correctAnswer)
+        .filter((_, i) => quizState.answers[i] !== null && quizState.answers[i] !== quizState.questions[i].correctAnswer)
         .map(q => q.id);
 
       // Grade calculation
@@ -1243,12 +1284,24 @@ export default function App() {
   }
 
   const exportData = () => {
+    let progressData: ProgressData = {};
+    let wrongBank: string[] = [];
+    let fcKnown: string[] = [];
+    try {
+      progressData = JSON.parse(localStorage.getItem('fbla_cyber_progress') ?? '{}');
+    } catch { /* use empty */ }
+    try {
+      wrongBank = JSON.parse(localStorage.getItem('fbla_wrong_bank') ?? '[]');
+    } catch { /* use empty */ }
+    try {
+      fcKnown = JSON.parse(localStorage.getItem('fbla_fc_known') ?? '[]');
+    } catch { /* use empty */ }
     const payload = {
       version: 1,
       exportedAt: new Date().toISOString(),
-      progress: JSON.parse(localStorage.getItem('fbla_cyber_progress') ?? '{}'),
-      wrongBank: JSON.parse(localStorage.getItem('fbla_wrong_bank') ?? '[]'),
-      fcKnown: JSON.parse(localStorage.getItem('fbla_fc_known') ?? '[]'),
+      progress: progressData,
+      wrongBank,
+      fcKnown,
     };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -1375,7 +1428,12 @@ export default function App() {
         {/* Session History */}
         {(() => {
           const historyRaw = localStorage.getItem('fbla_session_history');
-          const history: Array<{ date: string; type: string; score: number; total: number; pct: number; time: number }> = historyRaw ? JSON.parse(historyRaw) : [];
+          let history: Array<{ date: string; type: string; score: number; total: number; pct: number; time: number }> = [];
+          try {
+            history = historyRaw ? JSON.parse(historyRaw) : [];
+          } catch {
+            history = [];
+          }
           if (history.length === 0) return null;
           return (
             <div className="space-y-4">
