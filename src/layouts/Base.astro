@@ -1,0 +1,102 @@
+---
+import { SITE, OG_IMAGE, canonical } from '../consts';
+import ThemeToggle from '../components/ThemeToggle.astro';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  canonicalPath?: string;
+  ogType?: string;
+  jsonLd?: string;
+  activePath?: string;
+}
+
+const {
+  title,
+  description = SITE.description,
+  canonicalPath = '/',
+  ogType = 'website',
+  jsonLd,
+  activePath = '/',
+} = Astro.props;
+
+const navLinks = [
+  { href: '/', label: 'home' },
+  { href: '/about/', label: 'about' },
+  { href: '/projects/', label: 'projects' },
+  { href: '/blog/', label: 'blog' },
+  { href: '/guides/', label: 'guides' },
+];
+
+function isActive(href: string) {
+  if (href === '/') return activePath === '/';
+  return activePath.startsWith(href);
+}
+
+const pageTitle = title ? `${title} | ${SITE.title}` : SITE.title;
+const pageDescription = description;
+const pageUrl = canonical(canonicalPath);
+
+const siteJsonLd = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE.title,
+  url: SITE.url,
+  description: SITE.description,
+  author: { '@type': 'Person', name: 'Elias Zeiner', url: SITE.github },
+});
+---
+
+<!doctype html>
+<html lang="en" data-theme="nord" data-variant="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#2e3440" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDescription} />
+
+    <link rel="canonical" href={pageUrl} />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="alternate" type="application/rss+xml" href="/rss.xml" title={`${SITE.title} blog`} />
+
+    <meta property="og:site_name" content={SITE.title} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:url" content={pageUrl} />
+    <meta property="og:image" content={OG_IMAGE} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={pageDescription} />
+
+    <script type="application/ld+json" set:html={siteJsonLd} />
+    {jsonLd && <script type="application/ld+json" set:html={jsonLd} />}
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <header class="site-header">
+      <a class="brand" href="/">{SITE.title}</a>
+      <nav class="nav-links" aria-label="Main">
+        {navLinks.map((link) => (
+          <a href={link.href} aria-current={isActive(link.href) ? 'page' : undefined}>
+            {link.label}
+          </a>
+        ))}
+      </nav>
+      <ThemeToggle />
+    </header>
+    <main id="main">
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <p>
+        © {new Date().getFullYear()} {SITE.author} ·
+        <a href={SITE.github}>github</a> · <a href={`mailto:${SITE.email}`}>email</a> · <a href="/rss.xml">rss</a>
+      </p>
+    </footer>
+  </body>
+</html>

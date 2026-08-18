@@ -24,25 +24,14 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
-          cache-dependency-path: fbla-cybersecurity-2026/package-lock.json
 
       - name: Install dependencies
-        working-directory: fbla-cybersecurity-2026
         run: npm ci
 
-      - name: Build React app
-        working-directory: fbla-cybersecurity-2026
+      - name: Build site
         run: npm run build
-
-      - name: Assemble site
-        run: |
-          mkdir -p _site
-          # Copy root static site (exclude the React source folder and CI config)
-          rsync -a --exclude='fbla-cybersecurity-2026' --exclude='.github' --exclude='_site' . _site/
-          # Copy built React app into subfolder
-          cp -r fbla-cybersecurity-2026/dist _site/fbla-cybersecurity-2026
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -50,7 +39,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: _site
+          path: dist
 
   deploy:
     needs: build

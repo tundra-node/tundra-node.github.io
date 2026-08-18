@@ -1,0 +1,47 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection, render } from 'astro:content';
+import { OG_IMAGE } from '../../consts';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+
+const articleJsonLd = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: post.data.title,
+  description: post.data.description,
+  datePublished: post.data.pubDate.toISOString(),
+  image: OG_IMAGE,
+});
+---
+
+<Base
+  title={post.data.title}
+  description={post.data.description}
+  canonicalPath={`/blog/${post.id}/`}
+  activePath="/blog/"
+  ogType="article"
+  jsonLd={articleJsonLd}
+>
+  <article>
+    <h1>{post.data.title}</h1>
+    <p class="date">
+      {post.data.pubDate.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })}
+    </p>
+    <Content />
+  </article>
+  <a class="back" href="/blog/">← Back</a>
+</Base>

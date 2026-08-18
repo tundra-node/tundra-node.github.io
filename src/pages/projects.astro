@@ -1,0 +1,28 @@
+---
+import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const projects = (await getCollection('projects')).sort(
+  (a, b) => Number(b.data.highlight) - Number(a.data.highlight),
+);
+---
+
+<Base title="Projects" canonicalPath="/projects/" activePath="/projects/">
+  <h1>Projects</h1>
+  <p>Tools and configs I've built. Most are on <a href="https://github.com/tundra-node">github</a>.</p>
+
+  <ul class="item-list">
+    {projects.map((project) => (
+      <li>
+        <a href={project.data.url ?? project.data.repo ?? `/projects/${project.id}/`}>
+          {project.data.title}
+        </a>
+        {project.data.highlight && <span class="tag">featured</span>}
+        <div class="desc">{project.data.description}</div>
+        {project.data.stack.length > 0 && (
+          <div class="project-stack">{project.data.stack.join(' · ')}</div>
+        )}
+      </li>
+    ))}
+  </ul>
+</Base>

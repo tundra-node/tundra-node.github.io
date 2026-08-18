@@ -1,0 +1,39 @@
+# tundra-node
+
+Privacy tools, homelab projects, cybersecurity notes, and open source software.
+
+## About
+
+Personal site of tundra-node (Elias Zeiner). Cybersecurity student, Eagle Scout, FBLA competitor, homelab operator. Privacy first, FOSS oriented, "create over consume."
+
+## Pages
+
+- [Home](https://tundra-node.github.io/)
+- [About](https://tundra-node.github.io/about/)
+- [Projects](https://tundra-node.github.io/projects/)
+- [Blog](https://tundra-node.github.io/blog/)
+- [Guides](https://tundra-node.github.io/guides/)
+
+## Key projects
+
+- [I2P Easy Manager](https://tundra-node.github.io/projects/i2p-easy-manager/) - simplified I2P setup
+- [Nix Config](https://tundra-node.github.io/projects/nix-config/) - NixOS and home-manager config
+- [CueKeeper](https://tundra-node.github.io/projects/cuekeeper/) - theater sound cue manager
+- [FBLA Cybersecurity Study App](https://tundra-node.github.io/fbla-cybersecurity-2026/) - study tool for FBLA Cyber
+- [Chronicle](https://tundra-node.github.io/projects/chronicle/) - life tracking desktop app
+- [Nexus](https://tundra-node.github.io/projects/nexus/) - I2P search and router dashboard
+
+## Blog posts
+
+- [FBLA SLC 2026](https://tundra-node.github.io/blog/fbla-slc-2026/)
+- [Sites & Apps I Can't Live Without](https://tundra-node.github.io/blog/sites-apps/)
+- [New Blog](https://tundra-node.github.io/blog/new-blog/)
+
+## Guides
+
+- [Hosting an I2P Eepsite](https://tundra-node.github.io/guides/hosting-i2p-eepsite/)
+
+## Contact
+
+- Email: press-onyx-posted@duck.com
+- GitHub: https://github.com/tundra-node

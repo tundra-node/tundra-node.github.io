@@ -1,0 +1,29 @@
+---
+import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const guides = (await getCollection('guides')).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+---
+
+<Base title="Guides" canonicalPath="/guides/" activePath="/guides/">
+  <h1>Guides</h1>
+  <p>Step-by-step tutorials for I2P, self-hosting, and privacy tools.</p>
+
+  <ul class="item-list">
+    {guides.map((guide) => (
+      <li>
+        <a href={`/guides/${guide.id}/`}>{guide.data.title}</a>
+        <div class="desc">{guide.data.description}</div>
+        <div class="meta">
+          {guide.data.pubDate.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+          })}
+        </div>
+      </li>
+    ))}
+  </ul>
+</Base>

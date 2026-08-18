@@ -1,0 +1,56 @@
+<script>
+  (function () {
+    const KEY = 'tundra-site-theme';
+    const FAMILY = 'tundra-site-family';
+    const store = {
+      get(k) {
+        try {
+          return localStorage.getItem(k);
+        } catch (e) {
+          return null;
+        }
+      },
+      set(k, v) {
+        try {
+          localStorage.setItem(k, v);
+        } catch (e) {}
+      },
+    };
+
+    const families = ['nord', 'minimal'];
+    const variants = ['dark', 'light'];
+
+    function preferredVariant() {
+      return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+    }
+
+    function apply() {
+      const family = store.get(FAMILY) || document.documentElement.dataset.theme || 'nord';
+      const variant = store.get(KEY) || document.documentElement.dataset.variant || preferredVariant();
+      document.documentElement.dataset.theme = family;
+      document.documentElement.dataset.variant = variant;
+      document.querySelectorAll('[data-role="family"]').forEach((b) => {
+        b.setAttribute('aria-pressed', String(b.dataset.value === family));
+      });
+      document.querySelectorAll('[data-role="variant"]').forEach((b) => {
+        b.setAttribute('aria-pressed', String(b.dataset.value === variant));
+      });
+    }
+
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-role]');
+      if (!btn) return;
+      const role = btn.dataset.role;
+      const value = btn.dataset.value;
+      if (role === 'family' && families.includes(value)) store.set(FAMILY, value);
+      if (role === 'variant' && variants.includes(value)) store.set(KEY, value);
+      apply();
+    });
+
+    window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
+      if (!store.get(KEY)) apply();
+    });
+
+    apply();
+  })();
+</script>
