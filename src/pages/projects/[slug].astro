@@ -1,0 +1,37 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects');
+  return projects.map((project) => ({
+    params: { slug: project.id },
+    props: { project },
+  }));
+}
+
+const { project } = Astro.props;
+const { Content } = await render(project);
+---
+
+<Base
+  title={project.data.title}
+  description={project.data.description}
+  canonicalPath={`/projects/${project.id}/`}
+  activePath="/projects/"
+  ogType="article"
+>
+  <article>
+    <h1>{project.data.title}</h1>
+    {project.data.status !== 'active' && <span class="tag">{project.data.status}</span>}
+    <p class="date">
+      {project.data.stack.length > 0 && project.data.stack.join(' · ')}
+    </p>
+    <Content />
+    <div class="project-links">
+      {project.data.repo && <a class="back" href={project.data.repo}>source</a>}
+      {project.data.url && <a class="back" href={project.data.url}>live</a>}
+    </div>
+  </article>
+  <a class="back" href="/projects/">← Back</a>
+</Base>

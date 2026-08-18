@@ -1,6 +1,15 @@
 ---
 import Base from '../layouts/Base.astro';
 import { SITE } from '../consts';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog')).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+const latestPosts = posts.slice(0, 3);
+
+const projects = await getCollection('projects');
+const featured = projects.filter((p) => p.data.highlight).slice(0, 3);
 ---
 
 <Base canonicalPath="/" activePath="/">
@@ -35,4 +44,38 @@ import { SITE } from '../consts';
       </a>
     </div>
   </div>
+
+  {featured.length > 0 && (
+    <section class="home-section">
+      <h2>Featured projects</h2>
+      <ul class="item-list">
+        {featured.map((project) => (
+          <li>
+            <a href={`/projects/${project.id}/`}>{project.data.title}</a>
+            <div class="desc">{project.data.description}</div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+
+  {latestPosts.length > 0 && (
+    <section class="home-section">
+      <h2>Latest posts</h2>
+      <ul class="item-list">
+        {latestPosts.map((post) => (
+          <li>
+            <a href={`/blog/${post.id}/`}>{post.data.title}</a>
+            <div class="meta">
+              {post.data.pubDate.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
 </Base>

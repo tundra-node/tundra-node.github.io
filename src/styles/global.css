@@ -290,6 +290,10 @@ main {
   padding: var(--space-5) var(--space-2);
 }
 
+.home-section {
+  margin: var(--space-4) 0;
+}
+
 .hero h1 {
   font-size: 3rem;
   margin-bottom: var(--space-2);
@@ -414,6 +418,40 @@ main {
   font-size: 0.85rem;
   font-family: var(--font-mono);
   margin-top: 0.4rem;
+}
+
+.project-links {
+  margin-top: var(--space-3);
+}
+
+.project-links .back {
+  margin-right: var(--space-2);
+  margin-top: 0;
+}
+
+/* ===================== THEME CONTROLS ===================== */
+.theme-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.theme-group {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.theme-group .toggle-btn {
+  padding: 0.15rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+@media (max-width: 600px) {
+  .theme-controls {
+    flex-direction: row;
+    align-items: center;
+  }
 }
 
 /* ===================== ARTICLE ===================== */

@@ -33,6 +33,11 @@ const years = [...byYear.keys()].sort((a, b) => b - a);
                 year: 'numeric',
               })}
             </div>
+            {post.data.tags.length > 0 && (
+              <div class="tag-row">
+                {post.data.tags.map((tag) => <span class="tag">{tag}</span>)}
+              </div>
+            )}
           </li>
         ))}
       </ul>

@@ -10,6 +10,7 @@ interface Props {
   ogType?: string;
   jsonLd?: string;
   activePath?: string;
+  noindex?: boolean;
 }
 
 const {
@@ -19,6 +20,7 @@ const {
   ogType = 'website',
   jsonLd,
   activePath = '/',
+  noindex = false,
 } = Astro.props;
 
 const navLinks = [
@@ -38,6 +40,15 @@ const pageTitle = title ? `${title} | ${SITE.title}` : SITE.title;
 const pageDescription = description;
 const pageUrl = canonical(canonicalPath);
 
+const themeColors: Record<string, string> = {
+  'nord-dark': '#2e3440',
+  'nord-light': '#eceff4',
+  'minimal-dark': '#111111',
+  'minimal-light': '#ffffff',
+};
+
+const themeColor = themeColors[`${SITE.defaultTheme}-dark`] ?? '#2e3440';
+
 const siteJsonLd = JSON.stringify({
   '@context': 'https://schema.org',
   '@type': 'WebSite',
@@ -49,19 +60,51 @@ const siteJsonLd = JSON.stringify({
 ---
 
 <!doctype html>
-<html lang="en" data-theme="nord" data-variant="dark">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#2e3440" />
+    <meta name="theme-color" content={themeColor} />
     <meta name="referrer" content="no-referrer" />
     <meta name="generator" content={Astro.generator} />
     <title>{pageTitle}</title>
     <meta name="description" content={pageDescription} />
 
-    <link rel="canonical" href={pageUrl} />
+    <script is:inline>
+      (function () {
+        var THEME = 'tundra-site-theme';
+        var FAMILY = 'tundra-site-family';
+        var families = ['nord', 'minimal'];
+        var variants = ['dark', 'light'];
+        var colors = {
+          'nord-dark': '#2e3440',
+          'nord-light': '#eceff4',
+          'minimal-dark': '#111111',
+          'minimal-light': '#ffffff',
+        };
+        var read = function (k) {
+          try {
+            return localStorage.getItem(k);
+          } catch (e) {
+            return null;
+          }
+        };
+        var family = read(FAMILY) || 'nord';
+        var theme = read(THEME);
+        var variant = theme || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+        if (families.indexOf(family) === -1) family = 'nord';
+        if (variants.indexOf(variant) === -1) variant = 'dark';
+        document.documentElement.dataset.theme = family;
+        document.documentElement.dataset.variant = variant;
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.content = colors[family + '-' + variant] || colors['nord-dark'];
+      })();
+    </script>
+
+    {noindex && <meta name="robots" content="noindex" />}
+    {!noindex && <link rel="canonical" href={pageUrl} />}
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <link rel="alternate" type="application/rss+xml" href="/rss.xml" title={`${SITE.title} blog`} />
+    <link rel="alternate" type="application/rss+xml" href="/rss.xml" title={`${SITE.title} feed`} />
 
     <meta property="og:site_name" content={SITE.title} />
     <meta property="og:title" content={pageTitle} />

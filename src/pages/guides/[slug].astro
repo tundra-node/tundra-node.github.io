@@ -41,6 +41,11 @@ const articleJsonLd = JSON.stringify({
         year: 'numeric',
       })}
     </p>
+    {guide.data.tags.length > 0 && (
+      <div class="tag-row">
+        {guide.data.tags.map((tag) => <span class="tag">{tag}</span>)}
+      </div>
+    )}
     <Content />
   </article>
   <a class="back" href="/guides/">← Back</a>

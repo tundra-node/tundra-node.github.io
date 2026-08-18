@@ -14,9 +14,7 @@ const projects = (await getCollection('projects')).sort(
   <ul class="item-list">
     {projects.map((project) => (
       <li>
-        <a href={project.data.url ?? project.data.repo ?? `/projects/${project.id}/`}>
-          {project.data.title}
-        </a>
+        <a href={`/projects/${project.id}/`}>{project.data.title}</a>
         {project.data.highlight && <span class="tag">featured</span>}
         <div class="desc">{project.data.description}</div>
         {project.data.stack.length > 0 && (
