@@ -4,7 +4,7 @@ Privacy tools, homelab projects, cybersecurity notes, and open source software.
 
 ## About
 
-Personal site of tundra-node (Elias Zeiner). Cybersecurity student, Eagle Scout, FBLA competitor, homelab operator. Privacy first, FOSS oriented, "create over consume."
+Personal site of tundra-node (Elias Zeiner). Cybersecurity student, Boy Scout, FBLA competitor, homelab operator. Privacy first, FOSS oriented, "create over consume."
 
 ## Pages
 
