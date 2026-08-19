@@ -747,6 +747,10 @@ article img {
   transition: opacity 0.35s ease;
 }
 
+.boot[hidden] {
+  display: none;
+}
+
 .boot--done {
   opacity: 0;
 }
