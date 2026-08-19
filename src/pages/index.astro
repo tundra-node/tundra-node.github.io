@@ -1,5 +1,8 @@
 ---
 import Base from '../layouts/Base.astro';
+import BootOverlay from '../components/BootOverlay.astro';
+import Terminal from '../components/Terminal.astro';
+import NodeStatus from '../components/NodeStatus.astro';
 import { SITE } from '../consts';
 import { getCollection } from 'astro:content';
 
@@ -13,69 +16,78 @@ const featured = projects.filter((p) => p.data.highlight).slice(0, 3);
 ---
 
 <Base canonicalPath="/" activePath="/">
-  <section class="hero">
-    <h1>{SITE.title}</h1>
-    <p>Privacy tools, homelab projects, cybersecurity notes, and open source software.</p>
+  <BootOverlay />
+
+  <section class="node-hero" id="top">
+    <NodeStatus />
+    <div class="node-hero-text">
+      <h1>{SITE.title}</h1>
+      <p>Privacy tools, homelab projects, cybersecurity notes, and open source software.</p>
+    </div>
+    <Terminal />
+    <a class="skip-gimmick" href="#content">skip the gimmick ↓</a>
   </section>
 
-  <div class="nav-grid">
-    <div class="nav-card">
-      <a href="/about/">
-        <h2>About</h2>
-        <p>Who I am and what I'm into</p>
-      </a>
-    </div>
-    <div class="nav-card">
-      <a href="/projects/">
-        <h2>Projects</h2>
-        <p>Tools and configs I've built</p>
-      </a>
-    </div>
-    <div class="nav-card">
-      <a href="/blog/">
-        <h2>Blog</h2>
-        <p>Posts about I2P, Nix, and tech I'm working on</p>
-      </a>
-    </div>
-    <div class="nav-card">
-      <a href="/guides/">
-        <h2>Guides</h2>
-        <p>Step-by-step tutorials for I2P, self-hosting, and privacy tools</p>
-      </a>
+  <div id="content" class="home-content">
+    {featured.length > 0 && (
+      <section class="home-section">
+        <h2>featured projects</h2>
+        <ul class="item-list">
+          {featured.map((project) => (
+            <li>
+              <a href={`/projects/${project.id}/`}>{project.data.title}</a>
+              <div class="desc">{project.data.description}</div>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {latestPosts.length > 0 && (
+      <section class="home-section">
+        <h2>latest posts</h2>
+        <ul class="item-list">
+          {latestPosts.map((post) => (
+            <li>
+              <a href={`/blog/${post.id}/`}>{post.data.title}</a>
+              <div class="meta">
+                {post.data.pubDate.toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <div class="nav-grid">
+      <div class="nav-card">
+        <a href="/about/">
+          <h2>About</h2>
+          <p>Who I am and what I'm into</p>
+        </a>
+      </div>
+      <div class="nav-card">
+        <a href="/projects/">
+          <h2>Projects</h2>
+          <p>Tools and configs I've built</p>
+        </a>
+      </div>
+      <div class="nav-card">
+        <a href="/blog/">
+          <h2>Blog</h2>
+          <p>Posts about I2P, Nix, and tech I'm working on</p>
+        </a>
+      </div>
+      <div class="nav-card">
+        <a href="/guides/">
+          <h2>Guides</h2>
+          <p>Step-by-step tutorials for I2P, self-hosting, and privacy tools</p>
+        </a>
+      </div>
     </div>
   </div>
-
-  {featured.length > 0 && (
-    <section class="home-section">
-      <h2>Featured projects</h2>
-      <ul class="item-list">
-        {featured.map((project) => (
-          <li>
-            <a href={`/projects/${project.id}/`}>{project.data.title}</a>
-            <div class="desc">{project.data.description}</div>
-          </li>
-        ))}
-      </ul>
-    </section>
-  )}
-
-  {latestPosts.length > 0 && (
-    <section class="home-section">
-      <h2>Latest posts</h2>
-      <ul class="item-list">
-        {latestPosts.map((post) => (
-          <li>
-            <a href={`/blog/${post.id}/`}>{post.data.title}</a>
-            <div class="meta">
-              {post.data.pubDate.toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-              })}
-            </div>
-          </li>
-        ))}
-      </ul>
-    </section>
-  )}
 </Base>

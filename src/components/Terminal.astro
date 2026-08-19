@@ -1,0 +1,151 @@
+<div class="terminal" id="terminal">
+  <div class="terminal-bar">
+    <span class="terminal-dot terminal-dot--r"></span>
+    <span class="terminal-dot terminal-dot--y"></span>
+    <span class="terminal-dot terminal-dot--g"></span>
+    <span class="terminal-title">elias@tundra-node: ~</span>
+  </div>
+  <div class="terminal-body" id="term-body" role="log" aria-live="polite"></div>
+  <div class="terminal-line">
+    <span class="terminal-prompt">guest@tundra-node:~$</span>
+    <input
+      class="terminal-input"
+      id="term-input"
+      type="text"
+      autocomplete="off"
+      autocapitalize="off"
+      spellcheck="false"
+      aria-label="Terminal command"
+    />
+  </div>
+</div>
+
+<script>
+  (function () {
+    const body = document.getElementById('term-body');
+    const input = document.getElementById('term-input');
+    if (!body || !input) return;
+
+    const SITE = {
+      links: {
+        about: '<a href="/about/">about</a>',
+        projects: '<a href="/projects/">projects</a>',
+        blog: '<a href="/blog/">blog</a>',
+        guides: '<a href="/guides/">guides</a>',
+        rss: '<a href="/rss.xml">rss</a>',
+        fbla: '<a href="/fbla-cybersecurity-2026/">fbla study app</a>',
+      },
+    };
+
+    const COMMANDS = {
+      help: () =>
+        'available commands: help, whoami, about, projects, blog, guides, ' +
+        'contact, neofetch, ls, clear. try typing one, or press tab.',
+      whoami: () => 'guest on tundra-node. a real identity lives on the about page.',
+      about: () => 'who i am -> ' + SITE.links.about,
+      projects: () => 'what i built -> ' + SITE.links.projects,
+      blog: () => 'what i wrote -> ' + SITE.links.blog,
+      guides: () => 'how-to notes -> ' + SITE.links.guides,
+      rss: () => 'feed -> ' + SITE.links.rss,
+      contact: () => 'email: <a href="mailto:press-onyx-posted@duck.com">press-onyx-posted@duck.com</a>',
+      fbla: () => 'fbla study app -> ' + SITE.links.fbla,
+      neofetch: () =>
+        'tundra-node 7.2.3\nos: arch linux\nhost: home lab\nshell: this one\n' +
+        'wm: none, we are all headless here\nuptime: yes',
+      ls: () => 'about/  projects/  blog/  guides/  rss.xml',
+      clear: () => {
+        body.innerHTML = '';
+        return null;
+      },
+      sudo: () => 'nice try. privilege escalation denied.',
+      hack: () => 'scanning... 0 vulnerabilities found. better luck next time.',
+      'rm -rf': () => 'refusing to delete the internet today.',
+      whois: () => 'elias zeiner. senior. network security. pa, usa.',
+      echo: (arg) => arg,
+    };
+
+    let history = [];
+    let hIndex = -1;
+
+    function print(text, cls) {
+      const div = document.createElement('div');
+      if (cls) div.className = cls;
+      div.innerHTML = text;
+      body.appendChild(div);
+      body.scrollTop = body.scrollHeight;
+    }
+
+    function prompt() {
+      return '<span class="terminal-prompt">guest@tundra-node:~$</span>';
+    }
+
+    function run(raw) {
+      const line = document.createElement('div');
+      line.className = 'terminal-line';
+      line.innerHTML = prompt() + ' <span class="terminal-cmd">' + escapeHtml(raw) + '</span>';
+      body.appendChild(line);
+
+      const cmd = raw.trim().replace(/\s+/g, ' ');
+      if (cmd) history.push(cmd);
+      hIndex = history.length;
+
+      if (!cmd) return;
+
+      let out = 'command not found: ' + cmd;
+      for (const key of Object.keys(COMMANDS)) {
+        if (cmd === key) {
+          out = COMMANDS[key]();
+          break;
+        }
+      }
+      if (cmd.startsWith('echo ')) out = COMMANDS.echo(cmd.slice(5));
+      if (out !== null) print(out, 'terminal-out');
+      body.scrollTop = body.scrollHeight;
+    }
+
+    function escapeHtml(s) {
+      return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function complete() {
+      const val = input.value.toLowerCase();
+      if (!val) {
+        input.value = 'help';
+        return;
+      }
+      const keys = Object.keys(COMMANDS).filter((k) => k.startsWith(val));
+      if (keys.length === 1) input.value = keys[0];
+      else if (keys.length > 1) print(keys.join('  '), 'terminal-out');
+    }
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        run(input.value);
+        input.value = '';
+      } else if (e.key === 'Tab') {
+        e.preventDefault();
+        complete();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (hIndex > 0) {
+          hIndex--;
+          input.value = history[hIndex] || '';
+        }
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (hIndex < history.length) {
+          hIndex++;
+          input.value = history[hIndex] || '';
+        }
+      }
+    });
+
+    print(
+      'welcome to tundra-node. type <span class="terminal-cmd">help</span> to begin, or ' +
+        '<a href="#content">skip the gimmick</a>.',
+      'terminal-out'
+    );
+    print(prompt(), 'terminal-line');
+    input.focus();
+  })();
+</script>

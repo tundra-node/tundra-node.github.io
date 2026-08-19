@@ -1,26 +1,11 @@
-<div class="theme-controls" aria-label="Theme settings">
-  <div class="theme-group" aria-label="Theme family">
-    <button class="toggle-btn" type="button" data-role="family" data-value="nord" aria-pressed="true">
-      nord
-    </button>
-    <button class="toggle-btn" type="button" data-role="family" data-value="minimal" aria-pressed="false">
-      minimal
-    </button>
-  </div>
-  <div class="theme-group" aria-label="Color variant">
-    <button class="toggle-btn" type="button" data-role="variant" data-value="dark" aria-pressed="true">
-      dark
-    </button>
-    <button class="toggle-btn" type="button" data-role="variant" data-value="light" aria-pressed="false">
-      light
-    </button>
-  </div>
-</div>
+<button class="toggle-btn" type="button" data-role="variant" aria-pressed="true" title="Toggle dark/light">
+  <span class="toggle-label">theme</span>
+</button>
 
 <script>
   (function () {
     const KEY = 'tundra-site-theme';
-    const FAMILY = 'tundra-site-family';
+    const variants = ['dark', 'light'];
     const store = {
       get(k) {
         try {
@@ -36,33 +21,26 @@
       },
     };
 
-    const families = ['nord', 'minimal'];
-    const variants = ['dark', 'light'];
-
     function preferredVariant() {
       return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
     }
 
+    function current() {
+      return store.get(KEY) || document.documentElement.dataset.variant || preferredVariant();
+    }
+
     function apply() {
-      const family = store.get(FAMILY) || document.documentElement.dataset.theme || 'nord';
-      const variant = store.get(KEY) || document.documentElement.dataset.variant || preferredVariant();
-      document.documentElement.dataset.theme = family;
+      const variant = current();
       document.documentElement.dataset.variant = variant;
-      document.querySelectorAll('[data-role="family"]').forEach((b) => {
-        b.setAttribute('aria-pressed', String(b.dataset.value === family));
-      });
-      document.querySelectorAll('[data-role="variant"]').forEach((b) => {
-        b.setAttribute('aria-pressed', String(b.dataset.value === variant));
-      });
+      const btn = document.querySelector('[data-role="variant"]');
+      if (btn) btn.setAttribute('aria-pressed', String(variant === 'dark'));
     }
 
     document.addEventListener('click', (e) => {
-      const btn = e.target.closest('[data-role]');
+      const btn = e.target.closest('[data-role="variant"]');
       if (!btn) return;
-      const role = btn.dataset.role;
-      const value = btn.dataset.value;
-      if (role === 'family' && families.includes(value)) store.set(FAMILY, value);
-      if (role === 'variant' && variants.includes(value)) store.set(KEY, value);
+      const next = current() === 'dark' ? 'light' : 'dark';
+      store.set(KEY, next);
       apply();
     });
 

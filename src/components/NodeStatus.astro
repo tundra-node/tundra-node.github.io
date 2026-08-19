@@ -1,0 +1,144 @@
+<div class="node-status" id="node-status">
+  <div class="node-status-head">
+    <span class="node-dot" aria-hidden="true"></span>
+    <span class="node-name">tundra-node</span>
+    <span class="node-state">ONLINE</span>
+  </div>
+  <div class="node-status-grid">
+    <div class="node-stat">
+      <span class="node-stat-label">uptime</span>
+      <span class="node-stat-value" id="uptime">0d 00:00:00</span>
+    </div>
+    <div class="node-stat">
+      <span class="node-stat-label">services</span>
+      <span class="node-stat-value">6/6</span>
+    </div>
+    <div class="node-stat">
+      <span class="node-stat-label">latency</span>
+      <span class="node-stat-value" id="latency">-- ms</span>
+    </div>
+    <div class="node-stat">
+      <span class="node-stat-label">kernel</span>
+      <span class="node-stat-value">7.2.3</span>
+    </div>
+  </div>
+  <canvas class="node-canvas" id="node-canvas" width="320" height="96" aria-hidden="true"></canvas>
+</div>
+
+<script>
+  (function () {
+    const canvas = document.getElementById('node-canvas');
+    const uptime = document.getElementById('uptime');
+    const latency = document.getElementById('latency');
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // snow particles
+    const snow = [];
+    const N = reduced ? 0 : 28;
+    for (let i = 0; i < N; i++) {
+      snow.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: 0.6 + Math.random() * 1.4,
+        v: 0.15 + Math.random() * 0.35,
+        drift: (Math.random() - 0.5) * 0.3,
+      });
+    }
+
+    // network nodes
+    const nodes = [
+      { x: 40, y: 70, label: 'home' },
+      { x: 120, y: 30, label: 'media' },
+      { x: 190, y: 75, label: 'i2p' },
+      { x: 270, y: 35, label: 'nix' },
+    ];
+    const links = [
+      [0, 1],
+      [1, 2],
+      [2, 3],
+      [0, 3],
+      [1, 3],
+    ];
+
+    function draw(ts) {
+      const w = canvas.width;
+      const h = canvas.height;
+      ctx.clearRect(0, 0, w, h);
+
+      // links
+      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#88c0d0';
+      ctx.lineWidth = 1;
+      ctx.globalAlpha = 0.35;
+      for (const [a, b] of links) {
+        ctx.beginPath();
+        ctx.moveTo(nodes[a].x, nodes[a].y);
+        ctx.lineTo(nodes[b].x, nodes[b].y);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+
+      // nodes
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() || '#88c0d0';
+      for (const n of nodes) {
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // snow
+      if (!reduced) {
+        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-dim').trim() || '#e5e9f0';
+        for (const p of snow) {
+          p.y += p.v;
+          p.x += p.drift;
+          if (p.y > h) {
+            p.y = 0;
+            p.x = Math.random() * w;
+          }
+          if (p.x < 0) p.x = w;
+          if (p.x > w) p.x = 0;
+          ctx.globalAlpha = 0.7;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      // uptime counter
+      const t = Math.floor((ts / 1000) % 86400);
+      const hh = String(Math.floor(t / 3600)).padStart(2, '0');
+      const mm = String(Math.floor((t % 3600) / 60)).padStart(2, '0');
+      const ss = String(t % 60).padStart(2, '0');
+      if (uptime) uptime.textContent = `0d ${hh}:${mm}:${ss}`;
+
+      if (latency) {
+        const l = Math.floor(12 + Math.random() * 8);
+        latency.textContent = `${l} ms`;
+      }
+
+      if (!reduced) requestAnimationFrame(draw);
+    }
+
+    requestAnimationFrame(draw);
+
+    // mouse-reactive: nudge nodes toward cursor
+    canvas.addEventListener('mousemove', (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const mx = ((e.clientX - rect.left) / rect.width) * canvas.width;
+      const my = ((e.clientY - rect.top) / rect.height) * canvas.height;
+      for (const n of nodes) {
+        const dx = mx - n.x;
+        const dy = my - n.y;
+        const d = Math.hypot(dx, dy);
+        if (d < 60) {
+          n.x -= (dx / d) * 4;
+          n.y -= (dy / d) * 4;
+        }
+      }
+    });
+  })();
+</script>

@@ -1,6 +1,7 @@
 ---
 import { SITE, OG_IMAGE, canonical } from '../consts';
 import ThemeToggle from '../components/ThemeToggle.astro';
+import BootOverlay from '../components/BootOverlay.astro';
 import '../styles/global.css';
 
 interface Props {
@@ -41,13 +42,11 @@ const pageDescription = description;
 const pageUrl = canonical(canonicalPath);
 
 const themeColors: Record<string, string> = {
-  'nord-dark': '#2e3440',
-  'nord-light': '#eceff4',
-  'minimal-dark': '#111111',
-  'minimal-light': '#ffffff',
+  dark: '#2e3440',
+  light: '#eceff4',
 };
 
-const themeColor = themeColors[`${SITE.defaultTheme}-dark`] ?? '#2e3440';
+const themeColor = themeColors[SITE.defaultVariant] ?? '#2e3440';
 
 const siteJsonLd = JSON.stringify({
   '@context': 'https://schema.org',
@@ -73,14 +72,10 @@ const siteJsonLd = JSON.stringify({
     <script is:inline>
       (function () {
         var THEME = 'tundra-site-theme';
-        var FAMILY = 'tundra-site-family';
-        var families = ['nord', 'minimal'];
         var variants = ['dark', 'light'];
         var colors = {
-          'nord-dark': '#2e3440',
-          'nord-light': '#eceff4',
-          'minimal-dark': '#111111',
-          'minimal-light': '#ffffff',
+          dark: '#2e3440',
+          light: '#eceff4',
         };
         var read = function (k) {
           try {
@@ -89,15 +84,11 @@ const siteJsonLd = JSON.stringify({
             return null;
           }
         };
-        var family = read(FAMILY) || 'nord';
-        var theme = read(THEME);
-        var variant = theme || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-        if (families.indexOf(family) === -1) family = 'nord';
+        var variant = read(THEME) || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
         if (variants.indexOf(variant) === -1) variant = 'dark';
-        document.documentElement.dataset.theme = family;
         document.documentElement.dataset.variant = variant;
         var meta = document.querySelector('meta[name="theme-color"]');
-        if (meta) meta.content = colors[family + '-' + variant] || colors['nord-dark'];
+        if (meta) meta.content = colors[variant] || colors['dark'];
       })();
     </script>
 
@@ -120,6 +111,7 @@ const siteJsonLd = JSON.stringify({
     {jsonLd && <script type="application/ld+json" set:html={jsonLd} />}
   </head>
   <body>
+    <BootOverlay />
     <a class="skip-link" href="#main">Skip to main content</a>
     <header class="site-header">
       <a class="brand" href="/">{SITE.title}</a>

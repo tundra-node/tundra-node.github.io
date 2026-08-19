@@ -6,7 +6,7 @@ export const SITE = {
   github: 'https://github.com/tundra-node',
   description:
     'Privacy tools, homelab projects, cybersecurity notes, and open source software.',
-  defaultTheme: 'nord',
+  defaultVariant: 'dark',
 };
 
 export const OG_IMAGE = `${SITE.url}/og.png`;

@@ -1,0 +1,84 @@
+<div id="boot" class="boot" aria-hidden="true" hidden>
+  <pre class="boot-log" id="boot-log"></pre>
+</div>
+
+<script>
+  (function () {
+    const LOG = 'tundra-site-booted';
+    const store = {
+      get(k) {
+        try {
+          return localStorage.getItem(k);
+        } catch (e) {
+          return null;
+        }
+      },
+      set(k, v) {
+        try {
+          localStorage.setItem(k, v);
+        } catch (e) {}
+      },
+    };
+
+    const boot = document.getElementById('boot');
+    const logEl = document.getElementById('boot-log');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const alreadyBooted = store.get(LOG) === '1';
+
+    if (!boot || !logEl) return;
+    if (reduced || alreadyBooted) return;
+
+    const lines = [
+      'tundra-node kernel 7.2.3-arch1-1',
+      'mounting /home ... OK',
+      'starting sshd ... OK',
+      'homelab services online: 6/6',
+      'firewall: nftables active',
+      'i2p tunnel up (4 hops)',
+      'networking: online',
+      '',
+      'login: elias@tundra-node',
+    ];
+
+    boot.hidden = false;
+    boot.setAttribute('aria-hidden', 'false');
+
+    let i = 0;
+    let timer;
+
+    function showNext() {
+      if (i >= lines.length) {
+        store.set(LOG, '1');
+        setTimeout(() => {
+          boot.classList.add('boot--done');
+          setTimeout(() => {
+            boot.hidden = true;
+            boot.remove();
+          }, 350);
+        }, 250);
+        return;
+      }
+      logEl.textContent += lines[i] + '\n';
+      i++;
+      timer = setTimeout(showNext, 110);
+    }
+
+    function skip() {
+      clearTimeout(timer);
+      boot.classList.add('boot--done');
+      boot.setAttribute('aria-hidden', 'true');
+      setTimeout(() => {
+        if (boot) boot.remove();
+      }, 350);
+    }
+
+    boot.addEventListener('click', skip);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+        if (!boot.hidden) skip();
+      }
+    });
+
+    setTimeout(showNext, 250);
+  })();
+</script>
