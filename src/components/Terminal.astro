@@ -1,10 +1,4 @@
 <div class="terminal" id="terminal">
-  <div class="terminal-bar">
-    <span class="terminal-dot terminal-dot--r"></span>
-    <span class="terminal-dot terminal-dot--y"></span>
-    <span class="terminal-dot terminal-dot--g"></span>
-    <span class="terminal-title">elias@tundra-node: ~</span>
-  </div>
   <div class="terminal-body" id="term-body" role="log" aria-live="polite"></div>
   <div class="terminal-line">
     <span class="terminal-prompt">guest@tundra-node:~$</span>
@@ -27,6 +21,7 @@
     if (!body || !input) return;
 
     const SITE = {
+      name: 'Elias Zeiner',
       links: {
         about: '<a href="/about/">about</a>',
         projects: '<a href="/projects/">projects</a>',
@@ -34,20 +29,25 @@
         guides: '<a href="/guides/">guides</a>',
         rss: '<a href="/rss.xml">rss</a>',
         fbla: '<a href="/fbla-cybersecurity-2026/">fbla study app</a>',
+        linkedin: '<a href="https://www.linkedin.com/in/eliaszeiner">linkedin</a>',
+        github: '<a href="https://github.com/tundra-node">github</a>',
       },
     };
 
     const COMMANDS = {
       help: () =>
         'available commands: help, whoami, about, projects, blog, guides, ' +
-        'contact, neofetch, ls, clear. try typing one, or press tab.',
-      whoami: () => 'guest on tundra-node. a real identity lives on the about page.',
+        'contact, linkedin, neofetch, ls, clear. try typing one, or press tab.',
+      whoami: () => 'guest on tundra-node. the human behind it: ' + SITE.name + '.',
       about: () => 'who i am -> ' + SITE.links.about,
       projects: () => 'what i built -> ' + SITE.links.projects,
       blog: () => 'what i wrote -> ' + SITE.links.blog,
       guides: () => 'how-to notes -> ' + SITE.links.guides,
       rss: () => 'feed -> ' + SITE.links.rss,
-      contact: () => 'email: <a href="mailto:press-onyx-posted@duck.com">press-onyx-posted@duck.com</a>',
+      linkedin: () => 'linkedin -> ' + SITE.links.linkedin,
+      github: () => 'github -> ' + SITE.links.github,
+      contact: () =>
+        'email: <a href="mailto:press-onyx-posted@duck.com">press-onyx-posted@duck.com</a>',
       fbla: () => 'fbla study app -> ' + SITE.links.fbla,
       neofetch: () =>
         'tundra-node 7.2.3\nos: arch linux\nhost: home lab\nshell: this one\n' +
@@ -60,7 +60,8 @@
       sudo: () => 'nice try. privilege escalation denied.',
       hack: () => 'scanning... 0 vulnerabilities found. better luck next time.',
       'rm -rf': () => 'refusing to delete the internet today.',
-      whois: () => 'elias zeiner. senior. network security. pa, usa.',
+      whois: () =>
+        'elias zeiner. senior. network security. pa, usa. first and last name only - no geolocation for you.',
       echo: (arg) => arg,
     };
 
@@ -146,6 +147,7 @@
       'terminal-out'
     );
     print(prompt(), 'terminal-line');
-    input.focus();
+
+    if (!window.matchMedia('(pointer: coarse)').matches) input.focus();
   })();
 </script>

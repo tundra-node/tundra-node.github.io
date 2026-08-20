@@ -37,3 +37,4 @@ Personal site of tundra-node (Elias Zeiner). Cybersecurity student, Boy Scout, F
 
 - Email: press-onyx-posted@duck.com
 - GitHub: https://github.com/tundra-node
+- LinkedIn: https://www.linkedin.com/in/eliaszeiner

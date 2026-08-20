@@ -1,0 +1,249 @@
+---
+interface Props {
+  title?: string;
+}
+const { title = 'tundra-node' } = Astro.props;
+---
+
+<div class="desktop" id="desktop">
+  <canvas class="desktop-wall" id="desktop-wall" aria-hidden="true"></canvas>
+
+  <div class="desktop-icons" id="desktop-icons">
+    <slot name="icons" />
+  </div>
+
+  <div class="desktop-windows" id="desktop-windows">
+    <slot />
+  </div>
+
+  <div class="taskbar" id="taskbar">
+    <span class="taskbar-brand">{title}</span>
+    <span class="taskbar-right">
+      <span class="taskbar-clock" id="taskbar-clock">--:--</span>
+    </span>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const desk = document.getElementById('desktop');
+    const wall = document.getElementById('desktop-wall');
+    const windows = document.getElementById('desktop-windows');
+    const clock = document.getElementById('taskbar-clock');
+    if (!desk || !wall) return;
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // ---------- wallpaper canvas: network + snow ----------
+    const ctx = wall.getContext('2d');
+    const nodes = [
+      { x: 0.12, y: 0.18, label: 'home' },
+      { x: 0.32, y: 0.12, label: 'media' },
+      { x: 0.52, y: 0.24, label: 'i2p' },
+      { x: 0.72, y: 0.14, label: 'nix' },
+      { x: 0.26, y: 0.55, label: 'wg' },
+      { x: 0.64, y: 0.5, label: 'dns' },
+    ];
+    const links = [
+      [0, 1],
+      [1, 2],
+      [2, 3],
+      [0, 3],
+      [0, 4],
+      [4, 5],
+      [2, 5],
+      [1, 5],
+    ];
+    const snow = [];
+    const N = reduced ? 0 : 34;
+    for (let i = 0; i < N; i++) {
+      snow.push({
+        x: Math.random(),
+        y: Math.random(),
+        r: 0.6 + Math.random() * 1.4,
+        v: 0.0004 + Math.random() * 0.001,
+        drift: (Math.random() - 0.5) * 0.0008,
+      });
+    }
+
+    function size() {
+      const w = (wall.width = desk.clientWidth * window.devicePixelRatio);
+      const h = (wall.height = desk.clientHeight * window.devicePixelRatio);
+      wall.style.width = desk.clientWidth + 'px';
+      wall.style.height = desk.clientHeight + 'px';
+      return { w, h };
+    }
+
+    let dims = size();
+    window.addEventListener('resize', () => {
+      dims = size();
+    });
+
+    function cssVar(name, fallback) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+    }
+
+    function draw() {
+      const { w, h } = dims;
+      ctx.clearRect(0, 0, w, h);
+      const accent = cssVar('--accent', '#88c0d0');
+
+      ctx.lineWidth = 1;
+      ctx.globalAlpha = 0.3;
+      ctx.strokeStyle = accent;
+      for (const [a, b] of links) {
+        ctx.beginPath();
+        ctx.moveTo(nodes[a].x * w, nodes[a].y * h);
+        ctx.lineTo(nodes[b].x * w, nodes[b].y * h);
+        ctx.stroke();
+      }
+
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = accent;
+      for (const n of nodes) {
+        ctx.beginPath();
+        ctx.arc(n.x * w, n.y * h, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      if (!reduced) {
+        ctx.fillStyle = cssVar('--text-dim', '#e5e9f0');
+        for (const p of snow) {
+          p.y += p.v;
+          p.x += p.drift;
+          if (p.y > 1) {
+            p.y = 0;
+            p.x = Math.random();
+          }
+          if (p.x < 0) p.x = 1;
+          if (p.x > 1) p.x = 0;
+          ctx.globalAlpha = 0.7;
+          ctx.beginPath();
+          ctx.arc(p.x * w, p.y * h, p.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      if (!reduced) requestAnimationFrame(draw);
+    }
+    requestAnimationFrame(draw);
+
+    // ---------- clock ----------
+    function tick() {
+      if (!clock) return;
+      const d = new Date();
+      const hh = String(d.getHours()).padStart(2, '0');
+      const mm = String(d.getMinutes()).padStart(2, '0');
+      clock.textContent = `${hh}:${mm}`;
+    }
+    tick();
+    setInterval(tick, 30000);
+
+    // ---------- window manager ----------
+    const DESK = document.documentElement;
+    let z = 10;
+
+    function focusWin(win) {
+      z++;
+      win.style.zIndex = String(z);
+      win.classList.add('win--active');
+      document.querySelectorAll('.win').forEach((w) => {
+        if (w !== win) w.classList.remove('win--active');
+      });
+    }
+
+    function openWindow(id) {
+      const win = document.getElementById(id);
+      if (!win) return;
+      win.hidden = false;
+      focusWin(win);
+    }
+
+    function closeWindow(win) {
+      win.hidden = true;
+      win.classList.remove('win--active');
+    }
+
+    // icons open their window
+    document.addEventListener('click', (e) => {
+      const icon = e.target.closest('[data-open]');
+      if (!icon) return;
+      e.preventDefault();
+      const id = icon.getAttribute('data-open');
+      if (id === 'link') return;
+      openWindow(id);
+    });
+
+    // taskbar icons reopen
+    if (windows) {
+      windows.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-window]');
+        if (!btn) return;
+        const id = btn.getAttribute('data-window');
+        const win = document.getElementById(id);
+        if (!win) return;
+        if (win.hidden) {
+          win.hidden = false;
+          focusWin(win);
+        } else {
+          closeWindow(win);
+        }
+      });
+    }
+
+    // close buttons
+    if (windows) {
+      windows.addEventListener('click', (e) => {
+        const btn = e.target.closest('.win-close');
+        if (!btn) return;
+        const win = btn.closest('.win');
+        if (win) closeWindow(win);
+      });
+    }
+
+    // bring to front on mousedown
+    document.addEventListener('mousedown', (e) => {
+      const win = e.target.closest('.win');
+      if (win && !win.hidden) focusWin(win);
+    });
+
+    // drag windows by their title bar
+    document.addEventListener('mousedown', (e) => {
+      const bar = e.target.closest('.win-bar');
+      if (!bar) return;
+      const win = bar.closest('.win');
+      if (!win || win.hidden) return;
+
+      const rect = win.getBoundingClientRect();
+      const offX = e.clientX - rect.left;
+      const offY = e.clientY - rect.top;
+
+      function move(ev) {
+        const deskRect = desk.getBoundingClientRect();
+        let x = ev.clientX - offX - deskRect.left;
+        let y = ev.clientY - offY - deskRect.top;
+        x = Math.max(0, Math.min(x, deskRect.width - win.offsetWidth));
+        y = Math.max(0, Math.min(y, deskRect.height - 40));
+        win.style.left = x + 'px';
+        win.style.top = y + 'px';
+      }
+
+      function up() {
+        document.removeEventListener('mousemove', move);
+        document.removeEventListener('mouseup', up);
+      }
+
+      document.addEventListener('mousemove', move);
+      document.addEventListener('mouseup', up);
+    });
+
+    // keyboard: focus window on tab-in, escape to close
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        const active = document.querySelector('.win--active');
+        if (active && !active.hidden) closeWindow(active);
+      }
+    });
+  })();
+</script>

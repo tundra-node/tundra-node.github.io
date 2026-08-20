@@ -9,7 +9,7 @@ const personJsonLd = JSON.stringify({
   alternateName: 'tundra-node',
   url: SITE.url,
   image: OG_IMAGE,
-  sameAs: [SITE.github],
+  sameAs: [SITE.github, SITE.linkedin],
   jobTitle: 'Cybersecurity student',
   knowsAbout: [
     'network security',
@@ -65,6 +65,7 @@ const personJsonLd = JSON.stringify({
     <ul>
       <li><a href={`mailto:${SITE.email}`}>email me</a></li>
       <li><a href={SITE.github}>github</a></li>
+      <li><a href={SITE.linkedin}>linkedin</a></li>
     </ul>
   </section>
 </Base>

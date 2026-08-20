@@ -1,7 +1,6 @@
 ---
 import { SITE, OG_IMAGE, canonical } from '../consts';
 import ThemeToggle from '../components/ThemeToggle.astro';
-import BootOverlay from '../components/BootOverlay.astro';
 import '../styles/global.css';
 
 interface Props {
@@ -12,6 +11,7 @@ interface Props {
   jsonLd?: string;
   activePath?: string;
   noindex?: boolean;
+  bare?: boolean;
 }
 
 const {
@@ -22,6 +22,7 @@ const {
   jsonLd,
   activePath = '/',
   noindex = false,
+  bare = false,
 } = Astro.props;
 
 const navLinks = [
@@ -111,26 +112,28 @@ const siteJsonLd = JSON.stringify({
     {jsonLd && <script type="application/ld+json" set:html={jsonLd} />}
   </head>
   <body>
-    <BootOverlay />
     <a class="skip-link" href="#main">Skip to main content</a>
-    <header class="site-header">
-      <a class="brand" href="/">{SITE.title}</a>
-      <nav class="nav-links" aria-label="Main">
-        {navLinks.map((link) => (
-          <a href={link.href} aria-current={isActive(link.href) ? 'page' : undefined}>
-            {link.label}
-          </a>
-        ))}
-      </nav>
-      <ThemeToggle />
-    </header>
+    {!bare && (
+      <header class="site-header">
+        <a class="brand" href="/">{SITE.title}</a>
+        <nav class="nav-links" aria-label="Main">
+          {navLinks.map((link) => (
+            <a href={link.href} aria-current={isActive(link.href) ? 'page' : undefined}>
+              {link.label}
+            </a>
+          ))}
+        </nav>
+        <ThemeToggle />
+      </header>
+    )}
     <main id="main">
       <slot />
     </main>
     <footer class="site-footer">
       <p>
         © {new Date().getFullYear()} {SITE.author} ·
-        <a href={SITE.github}>github</a> · <a href={`mailto:${SITE.email}`}>email</a> · <a href="/rss.xml">rss</a>
+        <a href={SITE.github}>github</a> · <a href={SITE.linkedin}>linkedin</a> ·{' '}
+        <a href={`mailto:${SITE.email}`}>email</a> · <a href="/rss.xml">rss</a>
       </p>
     </footer>
   </body>
