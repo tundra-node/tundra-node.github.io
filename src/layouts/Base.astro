@@ -111,7 +111,7 @@ const siteJsonLd = JSON.stringify({
     <script type="application/ld+json" set:html={siteJsonLd} />
     {jsonLd && <script type="application/ld+json" set:html={jsonLd} />}
   </head>
-  <body>
+  <body class={bare ? 'bare' : undefined}>
     <a class="skip-link" href="#main">Skip to main content</a>
     {!bare && (
       <header class="site-header">
