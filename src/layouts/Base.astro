@@ -193,6 +193,12 @@ const siteJsonLd = JSON.stringify({
           { x: 0.26, y: 0.55, label: 'wg' },
           { x: 0.64, y: 0.5, label: 'dns' },
         ];
+        const pos = nodes.map((n) => ({ x: n.x, y: n.y }));
+        const vel = nodes.map(() => ({
+          x: (Math.random() - 0.5) * 0.0004,
+          y: (Math.random() - 0.5) * 0.0004,
+        }));
+        const mouse = { x: -1, y: -1 };
         const links = [
           [0, 1],
           [1, 2],
@@ -215,6 +221,16 @@ const siteJsonLd = JSON.stringify({
           });
         }
 
+        desk.addEventListener('mousemove', (e) => {
+          const r = desk.getBoundingClientRect();
+          mouse.x = (e.clientX - r.left) / r.width;
+          mouse.y = (e.clientY - r.top) / r.height;
+        });
+        desk.addEventListener('mouseleave', () => {
+          mouse.x = -1;
+          mouse.y = -1;
+        });
+
         function size() {
           const w = (wall.width = desk.clientWidth * window.devicePixelRatio);
           const h = (wall.height = desk.clientHeight * window.devicePixelRatio);
@@ -232,26 +248,64 @@ const siteJsonLd = JSON.stringify({
           return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
         }
 
+        function segDist(px, py, ax, ay, bx, by) {
+          const dx = bx - ax;
+          const dy = by - ay;
+          const l2 = dx * dx + dy * dy;
+          if (l2 === 0) return Math.hypot(px - ax, py - ay);
+          let t = ((px - ax) * dx + (py - ay) * dy) / l2;
+          t = Math.max(0, Math.min(1, t));
+          return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
+        }
+
         function draw() {
           const { w, h } = dims;
           ctx.clearRect(0, 0, w, h);
           const accent = cssVar('--accent', '#88c0d0');
 
-          ctx.lineWidth = 1;
-          ctx.globalAlpha = 0.3;
-          ctx.strokeStyle = accent;
+          if (!reduced) {
+            for (let i = 0; i < pos.length; i++) {
+              pos[i].x += vel[i].x;
+              pos[i].y += vel[i].y;
+              if (pos[i].x < 0.04 || pos[i].x > 0.96) vel[i].x *= -1;
+              if (pos[i].y < 0.04 || pos[i].y > 0.96) vel[i].y *= -1;
+              if (mouse.x >= 0) {
+                const dx = pos[i].x - mouse.x;
+                const dy = pos[i].y - mouse.y;
+                const d = Math.hypot(dx, dy);
+                if (d < 0.22 && d > 0) {
+                  const f = (0.22 - d) / 0.22;
+                  vel[i].x += (dx / d) * f * 0.004;
+                  vel[i].y += (dy / d) * f * 0.004;
+                }
+              }
+              vel[i].x *= 0.995;
+              vel[i].y *= 0.995;
+            }
+          }
+
           for (const [a, b] of links) {
+            let alpha = 0.3;
+            if (mouse.x >= 0) {
+              const d = segDist(mouse.x, mouse.y, pos[a].x, pos[a].y, pos[b].x, pos[b].y);
+              if (d < 0.18) alpha = Math.min(1, 0.3 + ((0.18 - d) / 0.18) * 0.7);
+            }
+            ctx.globalAlpha = alpha;
+            ctx.lineWidth = alpha > 0.5 ? 2 : 1;
+            ctx.strokeStyle = accent;
             ctx.beginPath();
-            ctx.moveTo(nodes[a].x * w, nodes[a].y * h);
-            ctx.lineTo(nodes[b].x * w, nodes[b].y * h);
+            ctx.moveTo(pos[a].x * w, pos[a].y * h);
+            ctx.lineTo(pos[b].x * w, pos[b].y * h);
             ctx.stroke();
           }
 
           ctx.globalAlpha = 1;
           ctx.fillStyle = accent;
-          for (const n of nodes) {
+          for (const n of pos) {
+            let r = 3;
+            if (mouse.x >= 0 && Math.hypot(n.x - mouse.x, n.y - mouse.y) < 0.12) r = 5;
             ctx.beginPath();
-            ctx.arc(n.x * w, n.y * h, 3, 0, Math.PI * 2);
+            ctx.arc(n.x * w, n.y * h, r, 0, Math.PI * 2);
             ctx.fill();
           }
 
@@ -362,6 +416,40 @@ const siteJsonLd = JSON.stringify({
             y = Math.max(0, Math.min(y, deskRect.height - 40));
             win.style.left = x + 'px';
             win.style.top = y + 'px';
+          }
+
+          function up() {
+            document.removeEventListener('mousemove', move);
+            document.removeEventListener('mouseup', up);
+          }
+
+          document.addEventListener('mousemove', move);
+          document.addEventListener('mouseup', up);
+        });
+
+        // resize windows by the corner handle
+        document.addEventListener('mousedown', (e) => {
+          const handle = e.target.closest('.win-resize');
+          if (!handle) return;
+          const win = handle.closest('.win');
+          if (!win || win.hidden) return;
+          e.preventDefault();
+
+          const startX = e.clientX;
+          const startY = e.clientY;
+          const startW = win.offsetWidth;
+          const startH = win.offsetHeight;
+          const minW = 280;
+          const minH = 140;
+
+          function move(ev) {
+            const deskRect = desk.getBoundingClientRect();
+            const maxW = deskRect.width - win.offsetLeft;
+            const maxH = deskRect.height - win.offsetTop - 40;
+            const w = Math.max(minW, Math.min(startW + (ev.clientX - startX), maxW));
+            const h = Math.max(minH, Math.min(startH + (ev.clientY - startY), maxH));
+            win.style.width = w + 'px';
+            win.style.height = h + 'px';
           }
 
           function up() {
