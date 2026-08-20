@@ -1,6 +1,5 @@
 ---
 import Base from '../layouts/Base.astro';
-import Desktop from '../components/Desktop.astro';
 import Window from '../components/Window.astro';
 import Terminal from '../components/Terminal.astro';
 import { SITE } from '../consts';
@@ -14,150 +13,113 @@ const projects = await getCollection('projects');
 const guides = await getCollection('guides');
 ---
 
-<Base canonicalPath="/" activePath="/" bare>
+<Base canonicalPath="/" activePath="/">
   <h1 class="visually-hidden">{SITE.title}</h1>
 
-  <Desktop>
-    <div slot="icons" class="icon-grid">
-      <a class="desktop-icon" data-open="win-terminal" href="/">
-        <span class="icon-glyph" aria-hidden="true">▤</span>
-        <span class="icon-label">terminal</span>
-      </a>
-      <a class="desktop-icon" data-open="win-about" href="/about/">
-        <span class="icon-glyph" aria-hidden="true">👤</span>
-        <span class="icon-label">about</span>
-      </a>
-      <a class="desktop-icon" data-open="win-projects" href="/projects/">
-        <span class="icon-glyph" aria-hidden="true">🗂</span>
-        <span class="icon-label">projects</span>
-      </a>
-      <a class="desktop-icon" data-open="win-blog" href="/blog/">
-        <span class="icon-glyph" aria-hidden="true">✎</span>
-        <span class="icon-label">blog</span>
-      </a>
-      <a class="desktop-icon" data-open="win-guides" href="/guides/">
-        <span class="icon-glyph" aria-hidden="true">➔</span>
-        <span class="icon-label">guides</span>
-      </a>
-      <a class="desktop-icon" data-open="win-contact" href="mailto:press-onyx-posted@duck.com">
-        <span class="icon-glyph" aria-hidden="true">✉</span>
-        <span class="icon-label">contact</span>
-      </a>
-      <a class="desktop-icon" data-open="win-linkedin" href={SITE.linkedin}>
-        <span class="icon-glyph" aria-hidden="true">in</span>
-        <span class="icon-label">linkedin</span>
-      </a>
-      <a class="desktop-icon" data-open="win-rss" href="/rss.xml">
-        <span class="icon-glyph" aria-hidden="true">◉</span>
-        <span class="icon-label">rss</span>
-      </a>
-    </div>
+  <Window id="win-terminal" title="terminal" open width="480px" x={220} y={40}>
+    <Terminal />
+  </Window>
 
-    <Window id="win-terminal" title="terminal" open width="480px" x={220} y={40}>
-      <Terminal />
-    </Window>
+  <Window id="win-about" title="about" width="380px" x={120} y={80}>
+    <h2>{SITE.name}</h2>
+    <p>
+      I'm a high school senior studying network security at a local vocational tech school. I
+      build privacy-focused tools, run a homelab, and write about what I learn.
+    </p>
+    <h3>stuff i do</h3>
+    <ul>
+      <li>cybersecurity student working toward a network security certificate</li>
+      <li>Eagle Scout candidate</li>
+      <li>FBLA. 5th at PA State 2026, NLC qualifier</li>
+      <li>homelab. two servers, self-hosted media stack, WireGuard, Pi-hole</li>
+      <li>open source. tools for I2P, privacy, and theater sound</li>
+    </ul>
+    <h3>interests</h3>
+    <ul>
+      <li>cybersecurity and red teaming</li>
+      <li>privacy and anti-surveillance</li>
+      <li>jazz guitar and music</li>
+      <li>retro computing</li>
+      <li>fitness</li>
+    </ul>
+  </Window>
 
-    <Window id="win-about" title="about" width="380px" x={120} y={80}>
-      <h2>{SITE.name}</h2>
-      <p>
-        I'm a high school senior studying network security at a local vocational tech school. I
-        build privacy-focused tools, run a homelab, and write about what I learn.
-      </p>
-      <h3>stuff i do</h3>
-      <ul>
-        <li>cybersecurity student working toward a network security certificate</li>
-        <li>Eagle Scout candidate</li>
-        <li>FBLA. 5th at PA State 2026, NLC qualifier</li>
-        <li>homelab. two servers, self-hosted media stack, WireGuard, Pi-hole</li>
-        <li>open source. tools for I2P, privacy, and theater sound</li>
-      </ul>
-      <h3>interests</h3>
-      <ul>
-        <li>cybersecurity and red teaming</li>
-        <li>privacy and anti-surveillance</li>
-        <li>jazz guitar and music</li>
-        <li>retro computing</li>
-        <li>fitness</li>
-      </ul>
-    </Window>
-
-    <Window id="win-projects" title="projects" width="380px" x={150} y={120}>
-      <ul class="win-list">
-        {projects.map((project) => (
-          <li>
-            <a href={`/projects/${project.id}/`}>{project.data.title}</a>
-            <div class="desc">{project.data.description}</div>
-            {project.data.stack.length > 0 && (
-              <div class="tag-row">
-                {project.data.stack.map((s) => (
-                  <span class="tag">{s}</span>
-                ))}
-              </div>
-            )}
-          </li>
-        ))}
-      </ul>
-    </Window>
-
-    <Window id="win-blog" title="blog" width="380px" x={180} y={160}>
-      <ul class="win-list">
-        {posts.map((post) => (
-          <li>
-            <a href={`/blog/${post.id}/`}>{post.data.title}</a>
-            <div class="desc">
-              {post.data.pubDate.toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-              })}
+  <Window id="win-projects" title="projects" width="380px" x={150} y={120}>
+    <ul class="win-list">
+      {projects.map((project) => (
+        <li>
+          <a href={`/projects/${project.id}/`}>{project.data.title}</a>
+          <div class="desc">{project.data.description}</div>
+          {project.data.stack.length > 0 && (
+            <div class="tag-row">
+              {project.data.stack.map((s) => (
+                <span class="tag">{s}</span>
+              ))}
             </div>
-          </li>
-        ))}
-      </ul>
-    </Window>
-
-    <Window id="win-guides" title="guides" width="380px" x={210} y={200}>
-      <ul class="win-list">
-        {guides.map((guide) => (
-          <li>
-            <a href={`/guides/${guide.id}/`}>{guide.data.title}</a>
-            <div class="desc">{guide.data.description}</div>
-          </li>
-        ))}
-      </ul>
-    </Window>
-
-    <Window id="win-contact" title="contact" width="380px" x={240} y={240}>
-      <ul class="win-list">
-        <li>
-          <a href={`mailto:${SITE.email}`}>email</a>
-          <div class="desc">{SITE.email}</div>
+          )}
         </li>
-        <li>
-          <a href={SITE.github}>github</a>
-          <div class="desc">@tundra-node</div>
-        </li>
-        <li>
-          <a href={SITE.linkedin}>linkedin</a>
-          <div class="desc">/in/eliaszeiner</div>
-        </li>
-        <li>
-          <a href="/rss.xml">rss</a>
-          <div class="desc">/rss.xml</div>
-        </li>
-      </ul>
-    </Window>
+      ))}
+    </ul>
+  </Window>
 
-    <Window id="win-linkedin" title="linkedin" width="380px" x={270} y={280}>
-      <p>
-        <a href={SITE.linkedin}>{SITE.linkedin}</a>
-      </p>
-    </Window>
+  <Window id="win-blog" title="blog" width="380px" x={180} y={160}>
+    <ul class="win-list">
+      {posts.map((post) => (
+        <li>
+          <a href={`/blog/${post.id}/`}>{post.data.title}</a>
+          <div class="desc">
+            {post.data.pubDate.toLocaleDateString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            })}
+          </div>
+        </li>
+      ))}
+    </ul>
+  </Window>
 
-    <Window id="win-rss" title="rss" width="380px" x={300} y={320}>
-      <p>
-        subscribe: <a href="/rss.xml">/rss.xml</a>
-      </p>
-    </Window>
-  </Desktop>
+  <Window id="win-guides" title="guides" width="380px" x={210} y={200}>
+    <ul class="win-list">
+      {guides.map((guide) => (
+        <li>
+          <a href={`/guides/${guide.id}/`}>{guide.data.title}</a>
+          <div class="desc">{guide.data.description}</div>
+        </li>
+      ))}
+    </ul>
+  </Window>
+
+  <Window id="win-contact" title="contact" width="380px" x={240} y={240}>
+    <ul class="win-list">
+      <li>
+        <a href={`mailto:${SITE.email}`}>email</a>
+        <div class="desc">{SITE.email}</div>
+      </li>
+      <li>
+        <a href={SITE.github}>github</a>
+        <div class="desc">@tundra-node</div>
+      </li>
+      <li>
+        <a href={SITE.linkedin}>linkedin</a>
+        <div class="desc">/in/eliaszeiner</div>
+      </li>
+      <li>
+        <a href="/rss.xml">rss</a>
+        <div class="desc">/rss.xml</div>
+      </li>
+    </ul>
+  </Window>
+
+  <Window id="win-linkedin" title="linkedin" width="380px" x={270} y={280}>
+    <p>
+      <a href={SITE.linkedin}>{SITE.linkedin}</a>
+    </p>
+  </Window>
+
+  <Window id="win-rss" title="rss" width="380px" x={300} y={320}>
+    <p>
+      subscribe: <a href="/rss.xml">/rss.xml</a>
+    </p>
+  </Window>
 </Base>

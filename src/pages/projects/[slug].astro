@@ -20,6 +20,7 @@ const { Content } = await render(project);
   canonicalPath={`/projects/${project.id}/`}
   activePath="/projects/"
   ogType="article"
+  windowTitle={project.data.title}
 >
   <article>
     <h1>{project.data.title}</h1>

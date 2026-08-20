@@ -1,7 +1,35 @@
+---
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog')).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+const projects = await getCollection('projects');
+const guides = await getCollection('guides');
+
+const fsTree = {
+  about: {
+    'me.md': { title: 'about elias zeiner', link: '/about/' },
+  },
+  projects: Object.fromEntries(
+    projects.map((p) => [p.id, { title: p.data.title, link: `/projects/${p.id}/` }]),
+  ),
+  blog: Object.fromEntries(
+    posts.map((p) => [p.id, { title: p.data.title, link: `/blog/${p.id}/` }]),
+  ),
+  guides: Object.fromEntries(
+    guides.map((g) => [g.id, { title: g.data.title, link: `/guides/${g.id}/` }]),
+  ),
+};
+const fsJson = JSON.stringify(fsTree).replace(/</g, '\\u003c');
+---
+
+<script is:inline type="application/json" id="fs-data" set:html={fsJson}></script>
+
 <div class="terminal" id="terminal">
   <div class="terminal-body" id="term-body" role="log" aria-live="polite"></div>
   <div class="terminal-line">
-    <span class="terminal-prompt">guest@tundra-node:~$</span>
+    <span class="terminal-prompt" id="term-prompt">guest@tundra-node:~$</span>
     <input
       class="terminal-input"
       id="term-input"
@@ -14,10 +42,11 @@
   </div>
 </div>
 
-<script>
+<script is:inline>
   (function () {
     const body = document.getElementById('term-body');
     const input = document.getElementById('term-input');
+    const promptEl = document.getElementById('term-prompt');
     if (!body || !input) return;
 
     const SITE = {
@@ -34,10 +63,97 @@
       },
     };
 
+    const RAW = JSON.parse(document.getElementById('fs-data').textContent);
+    function file(title, link) {
+      return { type: 'file', title, link };
+    }
+    function dir(children) {
+      return { type: 'dir', children };
+    }
+    function build(raw, isRoot) {
+      const out = {};
+      for (const [name, val] of Object.entries(raw)) {
+        out[name] = val.title ? file(val.title, val.link) : dir(build(val));
+      }
+      if (isRoot) out['rss.xml'] = file('rss feed', '/rss.xml');
+      return out;
+    }
+    const ROOT = dir(build(RAW, true));
+    let cwd = [];
+
+    function nodeAt(segs) {
+      let node = ROOT;
+      for (const s of segs) {
+        if (node.type !== 'dir' || !node.children[s]) return null;
+        node = node.children[s];
+      }
+      return node;
+    }
+
+    function resolvePath(path) {
+      const segs = path.startsWith('/') ? [] : [...cwd];
+      for (const part of path.split('/')) {
+        if (!part || part === '.') continue;
+        if (part === '..') {
+          if (segs.length) segs.pop();
+          continue;
+        }
+        const node = nodeAt(segs);
+        if (!node || node.type !== 'dir' || !node.children[part]) return null;
+        segs.push(part);
+      }
+      return segs;
+    }
+
+    function displayPath(segs) {
+      return '~' + (segs.length ? '/' + segs.join('/') : '');
+    }
+
+    function esc(s) {
+      return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function entryHtml(name, node) {
+      if (node.type === 'dir') return '<span class="terminal-dir">' + esc(name) + '/</span>';
+      return '<span class="terminal-link">' + esc(name) + '</span>';
+    }
+
+    function ls(path) {
+      const segs = path ? resolvePath(path) : [...cwd];
+      if (!segs) return 'ls: cannot access \'' + esc(path) + '\': no such file or directory';
+      const node = nodeAt(segs);
+      if (node.type === 'file') return '<a href="' + node.link + '">' + esc(node.title) + '</a>';
+      const names = Object.keys(node.children);
+      if (!names.length) return '(empty)';
+      return names.map((n) => entryHtml(n, node.children[n])).join('  ');
+    }
+
+    function cd(path) {
+      if (!path) {
+        cwd = [];
+        return null;
+      }
+      const segs = resolvePath(path);
+      if (!segs) return 'cd: no such directory: ' + esc(path);
+      const node = nodeAt(segs);
+      if (node.type === 'file') return 'cd: not a directory: ' + esc(path);
+      cwd = segs;
+      return null;
+    }
+
+    function cat(path) {
+      if (!path) return 'cat: missing operand';
+      const segs = resolvePath(path);
+      if (!segs) return 'cat: ' + esc(path) + ': no such file';
+      const node = nodeAt(segs);
+      if (node.type === 'dir') return 'cat: ' + esc(path) + ': is a directory';
+      return node.title + ' -> <a href="' + node.link + '">' + node.link + '</a>';
+    }
+
     const COMMANDS = {
       help: () =>
-        'available commands: help, whoami, about, projects, blog, guides, ' +
-        'contact, linkedin, neofetch, ls, clear. try typing one, or press tab.',
+        'available commands: help, whoami, about, projects, blog, guides, contact, linkedin, ' +
+        'neofetch, ls [path], cd [dir], pwd, cat <file>, clear. try typing one, or press tab.',
       whoami: () => 'guest on tundra-node. the human behind it: ' + SITE.name + '.',
       about: () => 'who i am -> ' + SITE.links.about,
       projects: () => 'what i built -> ' + SITE.links.projects,
@@ -49,10 +165,10 @@
       contact: () =>
         'email: <a href="mailto:press-onyx-posted@duck.com">press-onyx-posted@duck.com</a>',
       fbla: () => 'fbla study app -> ' + SITE.links.fbla,
+      pwd: () => displayPath(cwd),
       neofetch: () =>
         'tundra-node 7.2.3\nos: arch linux\nhost: home lab\nshell: this one\n' +
         'wm: none, we are all headless here\nuptime: yes',
-      ls: () => 'about/  projects/  blog/  guides/  rss.xml',
       clear: () => {
         body.innerHTML = '';
         return null;
@@ -77,7 +193,11 @@
     }
 
     function prompt() {
-      return '<span class="terminal-prompt">guest@tundra-node:~$</span>';
+      return '<span class="terminal-prompt">guest@tundra-node:' + displayPath(cwd) + '$</span>';
+    }
+
+    function setPrompt() {
+      promptEl.textContent = 'guest@tundra-node:' + displayPath(cwd) + '$';
     }
 
     function run(raw) {
@@ -86,21 +206,28 @@
       line.innerHTML = prompt() + ' <span class="terminal-cmd">' + escapeHtml(raw) + '</span>';
       body.appendChild(line);
 
-      const cmd = raw.trim().replace(/\s+/g, ' ');
-      if (cmd) history.push(cmd);
+      const parts = raw.trim().replace(/\s+/g, ' ').split(' ');
+      const cmd = parts[0];
+      const arg = parts.slice(1).join(' ');
+      if (raw.trim()) history.push(raw.trim());
       hIndex = history.length;
 
       if (!cmd) return;
 
       let out = 'command not found: ' + cmd;
-      for (const key of Object.keys(COMMANDS)) {
-        if (cmd === key) {
-          out = COMMANDS[key]();
-          break;
-        }
+      if (cmd in COMMANDS) {
+        out = COMMANDS[cmd](arg);
+      } else if (cmd === 'ls') {
+        out = ls(arg);
+      } else if (cmd === 'cd') {
+        out = cd(arg);
+        if (out === null) setPrompt();
+      } else if (cmd === 'cat') {
+        out = cat(arg);
+      } else if (cmd === 'echo') {
+        out = COMMANDS.echo(arg);
       }
-      if (cmd.startsWith('echo ')) out = COMMANDS.echo(cmd.slice(5));
-      if (out !== null) print(out, 'terminal-out');
+      if (out !== null && out !== undefined) print(out, 'terminal-out');
       body.scrollTop = body.scrollHeight;
     }
 
@@ -114,7 +241,11 @@
         input.value = 'help';
         return;
       }
-      const keys = Object.keys(COMMANDS).filter((k) => k.startsWith(val));
+      const cwdNode = nodeAt(cwd);
+      const fsNames = cwdNode && cwdNode.type === 'dir' ? Object.keys(cwdNode.children) : [];
+      const keys = Object.keys(COMMANDS)
+        .concat(fsNames)
+        .filter((k) => k.toLowerCase().startsWith(val));
       if (keys.length === 1) input.value = keys[0];
       else if (keys.length > 1) print(keys.join('  '), 'terminal-out');
     }
@@ -145,6 +276,12 @@
       'welcome to tundra-node. type <span class="terminal-cmd">help</span> to begin.',
       'terminal-out'
     );
+    print(
+      'you have a home directory. try <span class="terminal-cmd">ls</span> then ' +
+        '<span class="terminal-cmd">cd projects</span>.',
+      'terminal-out'
+    );
+    setPrompt();
 
     if (!window.matchMedia('(pointer: coarse)').matches) input.focus();
   })();
