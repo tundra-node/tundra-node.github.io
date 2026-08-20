@@ -5,9 +5,11 @@ interface Props {
   icon?: string;
   open?: boolean;
   width?: string;
+  x?: number;
+  y?: number;
 }
-const { id, title, icon, open = false, width } = Astro.props;
-const style = width ? `width:${width}` : undefined;
+const { id, title, icon, open = false, width, x = 140, y = 48 } = Astro.props;
+const style = `${width ? `width:${width};` : ''}left:${x}px;top:${y}px`;
 ---
 
 <section class="win" id={id} style={style} hidden={!open} role="dialog" aria-label={title}>

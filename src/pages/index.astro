@@ -53,11 +53,11 @@ const allProjects = projects.slice(0, 6);
       </a>
     </div>
 
-    <Window id="win-terminal" title="terminal" open width="480px">
+    <Window id="win-terminal" title="terminal" open width="480px" x={220} y={40}>
       <Terminal />
     </Window>
 
-    <Window id="win-about" title="about" width="380px">
+    <Window id="win-about" title="about" width="380px" x={120} y={80}>
       <h2>{SITE.name}</h2>
       <p>
         high school senior studying network security. privacy-first, FOSS, create over consume.
@@ -67,7 +67,7 @@ const allProjects = projects.slice(0, 6);
       </p>
     </Window>
 
-    <Window id="win-projects" title="projects" width="380px">
+    <Window id="win-projects" title="projects" width="380px" x={150} y={120}>
       {featured.length > 0 && (
         <ul class="win-list">
           {featured.map((project) => (
@@ -83,7 +83,7 @@ const allProjects = projects.slice(0, 6);
       </p>
     </Window>
 
-    <Window id="win-blog" title="blog" width="380px">
+    <Window id="win-blog" title="blog" width="380px" x={180} y={160}>
       {latestPosts.length > 0 && (
         <ul class="win-list">
           {latestPosts.map((post) => (
@@ -105,14 +105,14 @@ const allProjects = projects.slice(0, 6);
       </p>
     </Window>
 
-    <Window id="win-guides" title="guides" width="380px">
+    <Window id="win-guides" title="guides" width="380px" x={210} y={200}>
       <p>step-by-step notes for i2p, self-hosting, and privacy tools.</p>
       <p>
         <a href="/guides/">all guides →</a>
       </p>
     </Window>
 
-    <Window id="win-contact" title="contact" width="380px">
+    <Window id="win-contact" title="contact" width="380px" x={240} y={240}>
       <ul class="win-list">
         <li>
           <a href={`mailto:${SITE.email}`}>email</a>
@@ -133,21 +133,18 @@ const allProjects = projects.slice(0, 6);
       </ul>
     </Window>
 
-    <Window id="win-linkedin" title="linkedin" width="380px">
+    <Window id="win-linkedin" title="linkedin" width="380px" x={270} y={280}>
       <p>
         <a href={SITE.linkedin}>{SITE.linkedin}</a>
       </p>
-      <p class="desc">my first and last name, the professional way to reach me.</p>
     </Window>
 
-    <Window id="win-rss" title="rss" width="380px">
+    <Window id="win-rss" title="rss" width="380px" x={300} y={320}>
       <p>
         subscribe: <a href="/rss.xml">/rss.xml</a>
       </p>
     </Window>
   </Desktop>
-
-  <a class="skip-gimmick" href="#content">skip the gimmick ↓</a>
 
   <div id="content" class="home-content">
     <section class="home-section">
