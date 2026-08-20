@@ -2,7 +2,7 @@ export const SITE = {
   title: 'tundra-node',
   name: 'Elias Zeiner',
   author: 'Elias Zeiner',
-  email: 'press-onyx-posted@duck.com',
+  email: 'eliaspublic@icloud.com',
   url: 'https://tundra-node.github.io',
   github: 'https://github.com/tundra-node',
   linkedin: 'https://www.linkedin.com/in/eliaszeiner',
