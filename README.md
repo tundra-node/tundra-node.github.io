@@ -1,6 +1,6 @@
 # TundraOS
 
-Elias Zeiner's personal website, built as a desktop operating system that runs in the browser. It's a portfolio, a blog, and a homelab-nerd homage all in one: the whole site is a draggable, resizable OS.
+Elias Zeiner's personal website, built as a desktop operating system that runs in the browser. It's a portfolio, a blog, and a homelab all in one: the whole site is a draggable, resizable OS.
 
 Live at [tundra-node.github.io](https://tundra-node.github.io/).
 
