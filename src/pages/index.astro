@@ -9,16 +9,20 @@ import { getCollection } from 'astro:content';
 const posts = (await getCollection('blog')).sort(
   (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
-const latestPosts = posts.slice(0, 3);
 
 const projects = await getCollection('projects');
-const featured = projects.filter((p) => p.data.highlight).slice(0, 3);
-const allProjects = projects.slice(0, 6);
+const guides = await getCollection('guides');
 ---
 
 <Base canonicalPath="/" activePath="/" bare>
+  <h1 class="visually-hidden">{SITE.title}</h1>
+
   <Desktop>
     <div slot="icons" class="icon-grid">
+      <a class="desktop-icon" data-open="win-terminal" href="/">
+        <span class="icon-glyph" aria-hidden="true">▤</span>
+        <span class="icon-label">terminal</span>
+      </a>
       <a class="desktop-icon" data-open="win-about" href="/about/">
         <span class="icon-glyph" aria-hidden="true">👤</span>
         <span class="icon-label">about</span>
@@ -34,10 +38,6 @@ const allProjects = projects.slice(0, 6);
       <a class="desktop-icon" data-open="win-guides" href="/guides/">
         <span class="icon-glyph" aria-hidden="true">➔</span>
         <span class="icon-label">guides</span>
-      </a>
-      <a class="desktop-icon" data-open="win-terminal" href="/">
-        <span class="icon-glyph" aria-hidden="true">▤</span>
-        <span class="icon-label">terminal</span>
       </a>
       <a class="desktop-icon" data-open="win-contact" href="mailto:press-onyx-posted@duck.com">
         <span class="icon-glyph" aria-hidden="true">✉</span>
@@ -60,56 +60,71 @@ const allProjects = projects.slice(0, 6);
     <Window id="win-about" title="about" width="380px" x={120} y={80}>
       <h2>{SITE.name}</h2>
       <p>
-        high school senior studying network security. privacy-first, FOSS, create over consume.
+        I'm a high school senior studying network security at a local vocational tech school. I
+        build privacy-focused tools, run a homelab, and write about what I learn.
       </p>
-      <p>
-        <a href="/about/">full about →</a>
-      </p>
+      <h3>stuff i do</h3>
+      <ul>
+        <li>cybersecurity student working toward a network security certificate</li>
+        <li>Eagle Scout candidate</li>
+        <li>FBLA. 5th at PA State 2026, NLC qualifier</li>
+        <li>homelab. two servers, self-hosted media stack, WireGuard, Pi-hole</li>
+        <li>open source. tools for I2P, privacy, and theater sound</li>
+      </ul>
+      <h3>interests</h3>
+      <ul>
+        <li>cybersecurity and red teaming</li>
+        <li>privacy and anti-surveillance</li>
+        <li>jazz guitar and music</li>
+        <li>retro computing</li>
+        <li>fitness</li>
+      </ul>
     </Window>
 
     <Window id="win-projects" title="projects" width="380px" x={150} y={120}>
-      {featured.length > 0 && (
-        <ul class="win-list">
-          {featured.map((project) => (
-            <li>
-              <a href={`/projects/${project.id}/`}>{project.data.title}</a>
-              <div class="desc">{project.data.description}</div>
-            </li>
-          ))}
-        </ul>
-      )}
-      <p>
-        <a href="/projects/">all {allProjects.length} projects →</a>
-      </p>
+      <ul class="win-list">
+        {projects.map((project) => (
+          <li>
+            <a href={`/projects/${project.id}/`}>{project.data.title}</a>
+            <div class="desc">{project.data.description}</div>
+            {project.data.stack.length > 0 && (
+              <div class="tag-row">
+                {project.data.stack.map((s) => (
+                  <span class="tag">{s}</span>
+                ))}
+              </div>
+            )}
+          </li>
+        ))}
+      </ul>
     </Window>
 
     <Window id="win-blog" title="blog" width="380px" x={180} y={160}>
-      {latestPosts.length > 0 && (
-        <ul class="win-list">
-          {latestPosts.map((post) => (
-            <li>
-              <a href={`/blog/${post.id}/`}>{post.data.title}</a>
-              <div class="desc">
-                {post.data.pubDate.toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-      <p>
-        <a href="/blog/">all posts →</a>
-      </p>
+      <ul class="win-list">
+        {posts.map((post) => (
+          <li>
+            <a href={`/blog/${post.id}/`}>{post.data.title}</a>
+            <div class="desc">
+              {post.data.pubDate.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })}
+            </div>
+          </li>
+        ))}
+      </ul>
     </Window>
 
     <Window id="win-guides" title="guides" width="380px" x={210} y={200}>
-      <p>step-by-step notes for i2p, self-hosting, and privacy tools.</p>
-      <p>
-        <a href="/guides/">all guides →</a>
-      </p>
+      <ul class="win-list">
+        {guides.map((guide) => (
+          <li>
+            <a href={`/guides/${guide.id}/`}>{guide.data.title}</a>
+            <div class="desc">{guide.data.description}</div>
+          </li>
+        ))}
+      </ul>
     </Window>
 
     <Window id="win-contact" title="contact" width="380px" x={240} y={240}>
@@ -145,72 +160,4 @@ const allProjects = projects.slice(0, 6);
       </p>
     </Window>
   </Desktop>
-
-  <div id="content" class="home-content">
-    <section class="home-section">
-      <h1>{SITE.title}</h1>
-      <p>{SITE.description}</p>
-    </section>
-
-    {featured.length > 0 && (
-      <section class="home-section">
-        <h2>featured projects</h2>
-        <ul class="item-list">
-          {featured.map((project) => (
-            <li>
-              <a href={`/projects/${project.id}/`}>{project.data.title}</a>
-              <div class="desc">{project.data.description}</div>
-            </li>
-          ))}
-        </ul>
-      </section>
-    )}
-
-    {latestPosts.length > 0 && (
-      <section class="home-section">
-        <h2>latest posts</h2>
-        <ul class="item-list">
-          {latestPosts.map((post) => (
-            <li>
-              <a href={`/blog/${post.id}/`}>{post.data.title}</a>
-              <div class="meta">
-                {post.data.pubDate.toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                })}
-              </div>
-            </li>
-          ))}
-        </ul>
-      </section>
-    )}
-
-    <div class="nav-grid">
-      <div class="nav-card">
-        <a href="/about/">
-          <h2>About</h2>
-          <p>Who I am and what I'm into</p>
-        </a>
-      </div>
-      <div class="nav-card">
-        <a href="/projects/">
-          <h2>Projects</h2>
-          <p>Tools and configs I've built</p>
-        </a>
-      </div>
-      <div class="nav-card">
-        <a href="/blog/">
-          <h2>Blog</h2>
-          <p>Posts about I2P, Nix, and tech I'm working on</p>
-        </a>
-      </div>
-      <div class="nav-card">
-        <a href="/guides/">
-          <h2>Guides</h2>
-          <p>Step-by-step tutorials for I2P, self-hosting, and privacy tools</p>
-        </a>
-      </div>
-    </div>
-  </div>
 </Base>

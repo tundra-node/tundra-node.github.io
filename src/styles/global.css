@@ -276,73 +276,6 @@ main {
   flex: 1;
 }
 
-/* ===================== HOME ===================== */
-.hero {
-  text-align: center;
-  padding: var(--space-5) var(--space-2);
-}
-
-.home-section {
-  margin: var(--space-4) 0;
-}
-
-.hero h1 {
-  font-size: 3rem;
-  margin-bottom: var(--space-2);
-}
-
-.hero p {
-  color: var(--muted);
-  font-size: 1.1rem;
-  max-width: 560px;
-  margin: 0 auto;
-}
-
-.nav-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: var(--space-2);
-  margin: var(--space-4) 0;
-}
-
-.nav-card {
-  background: var(--bg-elev);
-  border: 1px solid var(--border);
-  border-left: 4px solid var(--accent);
-  border-radius: var(--radius);
-  padding: var(--space-3);
-  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
-}
-
-.nav-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px var(--shadow);
-  border-color: var(--accent-strong);
-}
-
-.nav-card a {
-  display: block;
-  color: inherit;
-}
-
-.nav-card a:hover {
-  text-decoration: none;
-}
-
-.nav-card h2 {
-  border: none;
-  color: var(--accent);
-  font-size: 1.25rem;
-  margin: 0 0 0.5rem;
-  padding: 0;
-}
-
-.nav-card p {
-  color: var(--muted);
-  font-size: 0.95rem;
-  margin: 0;
-}
-
 /* ===================== LISTS (blog/guides/projects) ===================== */
 .item-list {
   list-style: none;
@@ -521,6 +454,18 @@ article img {
   margin-top: 0.5rem;
 }
 
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* ===================== HOME / DESKTOP ===================== */
 .desktop {
   position: relative;
@@ -552,18 +497,6 @@ body.bare .desktop {
   border: none;
   border-radius: 0;
   margin-bottom: 0;
-}
-
-body.bare .home-content {
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding: var(--space-5) 1.5rem var(--space-5);
-}
-
-body.bare .site-footer {
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding-bottom: var(--space-4);
 }
 
 .desktop-wall {
@@ -837,10 +770,6 @@ body.bare .site-footer {
   font-size: 0.9rem;
   caret-color: var(--accent);
   min-width: 0;
-}
-
-.home-content {
-  margin-top: var(--space-5);
 }
 
 /* ===================== RESPONSIVE ===================== */
