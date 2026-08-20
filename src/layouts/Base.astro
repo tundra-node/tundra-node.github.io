@@ -166,7 +166,7 @@ const siteJsonLd = JSON.stringify({
       </main>
 
       <div class="taskbar" id="taskbar">
-        <span class="taskbar-brand">{SITE.title}</span>
+        <a class="taskbar-brand" href="/">{SITE.title}</a>
         <span class="taskbar-right">
           <span class="taskbar-clock" id="taskbar-clock">--:--</span>
           <ThemeToggle />
@@ -195,8 +195,8 @@ const siteJsonLd = JSON.stringify({
         ];
         const pos = nodes.map((n) => ({ x: n.x, y: n.y }));
         const vel = nodes.map(() => ({
-          x: (Math.random() - 0.5) * 0.0004,
-          y: (Math.random() - 0.5) * 0.0004,
+          x: (Math.random() - 0.5) * 0.0006,
+          y: (Math.random() - 0.5) * 0.0006,
         }));
         const mouse = { x: -1, y: -1 };
         const links = [
@@ -221,10 +221,10 @@ const siteJsonLd = JSON.stringify({
           });
         }
 
+        let deskRect = desk.getBoundingClientRect();
         desk.addEventListener('mousemove', (e) => {
-          const r = desk.getBoundingClientRect();
-          mouse.x = (e.clientX - r.left) / r.width;
-          mouse.y = (e.clientY - r.top) / r.height;
+          mouse.x = (e.clientX - deskRect.left) / deskRect.width;
+          mouse.y = (e.clientY - deskRect.top) / deskRect.height;
         });
         desk.addEventListener('mouseleave', () => {
           mouse.x = -1;
@@ -232,6 +232,7 @@ const siteJsonLd = JSON.stringify({
         });
 
         function size() {
+          deskRect = desk.getBoundingClientRect();
           const w = (wall.width = desk.clientWidth * window.devicePixelRatio);
           const h = (wall.height = desk.clientHeight * window.devicePixelRatio);
           wall.style.width = desk.clientWidth + 'px';
@@ -244,9 +245,18 @@ const siteJsonLd = JSON.stringify({
           dims = size();
         });
 
-        function cssVar(name, fallback) {
-          return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+        let accent = '#88c0d0';
+        let snowColor = '#e5e9f0';
+        function readTheme() {
+          const cs = getComputedStyle(document.documentElement);
+          accent = cs.getPropertyValue('--accent').trim() || accent;
+          snowColor = cs.getPropertyValue('--text-dim').trim() || snowColor;
         }
+        readTheme();
+        new MutationObserver(readTheme).observe(document.documentElement, {
+          attributes: true,
+          attributeFilter: ['data-variant'],
+        });
 
         function segDist(px, py, ax, ay, bx, by) {
           const dx = bx - ax;
@@ -261,10 +271,11 @@ const siteJsonLd = JSON.stringify({
         function draw() {
           const { w, h } = dims;
           ctx.clearRect(0, 0, w, h);
-          const accent = cssVar('--accent', '#88c0d0');
 
           if (!reduced) {
             for (let i = 0; i < pos.length; i++) {
+              vel[i].x += (Math.random() - 0.5) * 0.00004;
+              vel[i].y += (Math.random() - 0.5) * 0.00004;
               pos[i].x += vel[i].x;
               pos[i].y += vel[i].y;
               if (pos[i].x < 0.04 || pos[i].x > 0.96) vel[i].x *= -1;
@@ -310,7 +321,7 @@ const siteJsonLd = JSON.stringify({
           }
 
           if (!reduced) {
-            ctx.fillStyle = cssVar('--text-dim', '#e5e9f0');
+            ctx.fillStyle = snowColor;
             for (const p of snow) {
               p.y += p.v;
               p.x += p.drift;
@@ -345,6 +356,7 @@ const siteJsonLd = JSON.stringify({
 
         // ---------- window manager ----------
         let z = 10;
+        const TASKBAR = 34;
 
         function focusWin(win) {
           z++;
@@ -353,13 +365,6 @@ const siteJsonLd = JSON.stringify({
           document.querySelectorAll('.win').forEach((w) => {
             if (w !== win) w.classList.remove('win--active');
           });
-        }
-
-        function openWindow(id) {
-          const win = document.getElementById(id);
-          if (!win) return;
-          win.hidden = false;
-          focusWin(win);
         }
 
         function closeWindow(win) {
@@ -378,6 +383,7 @@ const siteJsonLd = JSON.stringify({
           if (win.hidden) {
             win.hidden = false;
             focusWin(win);
+            win.focus({ preventScroll: true });
           } else {
             closeWindow(win);
           }
@@ -409,11 +415,10 @@ const siteJsonLd = JSON.stringify({
           const offY = e.clientY - rect.top;
 
           function move(ev) {
-            const deskRect = desk.getBoundingClientRect();
             let x = ev.clientX - offX - deskRect.left;
             let y = ev.clientY - offY - deskRect.top;
             x = Math.max(0, Math.min(x, deskRect.width - win.offsetWidth));
-            y = Math.max(0, Math.min(y, deskRect.height - 40));
+            y = Math.max(0, Math.min(y, deskRect.height - TASKBAR - 4));
             win.style.left = x + 'px';
             win.style.top = y + 'px';
           }
@@ -443,9 +448,8 @@ const siteJsonLd = JSON.stringify({
           const minH = 140;
 
           function move(ev) {
-            const deskRect = desk.getBoundingClientRect();
             const maxW = deskRect.width - win.offsetLeft;
-            const maxH = deskRect.height - win.offsetTop - 40;
+            const maxH = deskRect.height - win.offsetTop - TASKBAR - 4;
             const w = Math.max(minW, Math.min(startW + (ev.clientX - startX), maxW));
             const h = Math.max(minH, Math.min(startH + (ev.clientY - startY), maxH));
             win.style.width = w + 'px';

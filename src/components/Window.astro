@@ -13,11 +13,11 @@ const { id, title, icon, open = false, width, x = 140, y = 48, closable = true }
 const style = `${width ? `width:${width};` : ''}left:${x}px;top:${y}px`;
 ---
 
-<section class:list={['win', { 'win--content': !closable }]} id={id} style={style} hidden={!open} role="dialog" aria-label={title}>
+<section class:list={['win', { 'win--content': !closable }]} id={id} style={style} hidden={!open} role="dialog" aria-label={title} tabindex="-1">
   <header class="win-bar">
     <span class="win-title">
       {icon && <span class="win-icon" aria-hidden="true">{icon}</span>}
-      {title}
+      <span class="win-title-text">{title}</span>
     </span>
     {closable && (
       <button class="win-close" type="button" aria-label={`Close ${title}`}>×</button>

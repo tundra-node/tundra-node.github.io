@@ -91,6 +91,8 @@ const fsJson = JSON.stringify(fsTree).replace(/</g, '\\u003c');
     }
 
     function resolvePath(path) {
+      if (path === '~') return [];
+      if (path.startsWith('~/')) path = path.slice(1);
       const segs = path.startsWith('/') ? [] : [...cwd];
       for (const part of path.split('/')) {
         if (!part || part === '.') continue;
@@ -115,7 +117,7 @@ const fsJson = JSON.stringify(fsTree).replace(/</g, '\\u003c');
 
     function entryHtml(name, node) {
       if (node.type === 'dir') return '<span class="terminal-dir">' + esc(name) + '/</span>';
-      return '<span class="terminal-link">' + esc(name) + '</span>';
+      return '<a class="terminal-link" href="' + node.link + '">' + esc(name) + '</a>';
     }
 
     function ls(path) {
@@ -177,8 +179,8 @@ const fsJson = JSON.stringify(fsTree).replace(/</g, '\\u003c');
       hack: () => 'scanning... 0 vulnerabilities found. better luck next time.',
       'rm -rf': () => 'refusing to delete the internet today.',
       whois: () =>
-        'elias zeiner. senior. network security. pa, usa. first and last name only - no geolocation for you.',
-      echo: (arg) => arg,
+        'elias zeiner. senior. network security. first and last name only - no geolocation for you.',
+      echo: (arg) => esc(arg),
     };
 
     let history = [];
@@ -214,7 +216,7 @@ const fsJson = JSON.stringify(fsTree).replace(/</g, '\\u003c');
 
       if (!cmd) return;
 
-      let out = 'command not found: ' + cmd;
+      let out = 'command not found: ' + esc(cmd);
       if (cmd in COMMANDS) {
         out = COMMANDS[cmd](arg);
       } else if (cmd === 'ls') {
@@ -236,18 +238,43 @@ const fsJson = JSON.stringify(fsTree).replace(/</g, '\\u003c');
     }
 
     function complete() {
-      const val = input.value.toLowerCase();
-      if (!val) {
-        input.value = 'help';
+      const val = input.value;
+      const slash = val.lastIndexOf('/');
+      const hasSlash = slash !== -1;
+      const partial = val.slice(slash + 1).toLowerCase();
+      let matches;
+
+      if (hasSlash) {
+        const dirPath = val.slice(0, slash) || '/';
+        const segs = resolvePath(dirPath);
+        const node = segs && nodeAt(segs);
+        if (!node || node.type !== 'dir') return;
+        const names = Object.keys(node.children);
+        matches = names.filter((k) => k.toLowerCase().startsWith(partial));
+        if (matches.length === 1) {
+          const child = node.children[matches[0]];
+          input.value = val.slice(0, slash + 1) + matches[0] + (child.type === 'dir' ? '/' : '');
+        } else if (matches.length > 1) {
+          print(matches.map((n) => esc(n)).join('  '), 'terminal-out');
+        }
         return;
       }
+
       const cwdNode = nodeAt(cwd);
-      const fsNames = cwdNode && cwdNode.type === 'dir' ? Object.keys(cwdNode.children) : [];
-      const keys = Object.keys(COMMANDS)
+      const fsNames =
+        cwdNode && cwdNode.type === 'dir' ? Object.keys(cwdNode.children) : [];
+      matches = Object.keys(COMMANDS)
         .concat(fsNames)
-        .filter((k) => k.toLowerCase().startsWith(val));
-      if (keys.length === 1) input.value = keys[0];
-      else if (keys.length > 1) print(keys.join('  '), 'terminal-out');
+        .filter((k) => k.toLowerCase().startsWith(partial));
+
+      if (matches.length === 1) {
+        const m = matches[0];
+        const isDir =
+          cwdNode && cwdNode.type === 'dir' && cwdNode.children[m] && cwdNode.children[m].type === 'dir';
+        input.value = m + (isDir ? '/' : ' ');
+      } else if (matches.length > 1) {
+        print(matches.join('  '), 'terminal-out');
+      }
     }
 
     input.addEventListener('keydown', (e) => {

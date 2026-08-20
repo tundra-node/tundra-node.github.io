@@ -479,6 +479,14 @@ article img {
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.win-title-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .win-icon {
@@ -588,6 +596,18 @@ article img {
   z-index: 20;
 }
 
+.taskbar-brand {
+  color: var(--text-dim);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+
+.taskbar-brand:hover {
+  color: var(--accent);
+  text-decoration: none;
+}
+
 .taskbar-brand::before {
   content: '◆ ';
   color: var(--accent-strong);
@@ -653,6 +673,15 @@ article img {
   color: var(--accent-strong);
 }
 
+.terminal-dir {
+  color: var(--accent-2);
+}
+
+.terminal-link {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
 .terminal-prompt {
   color: var(--accent-2);
   user-select: none;
@@ -685,31 +714,33 @@ article img {
 /* ===================== RESPONSIVE ===================== */
 @media (max-width: 600px) {
   .desktop-icons {
-    top: var(--space-2);
-    left: 0.5rem;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 6px 4px 0;
+  }
+
+  .icon-grid {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.3rem 0.4rem;
   }
 
   .desktop-icon {
-    width: 60px;
-    padding: 0.35rem 0.15rem;
+    width: 54px;
+    padding: 0.3rem 0.1rem;
   }
 
   .icon-glyph {
-    width: 34px;
-    height: 34px;
-    font-size: 1rem;
+    width: 30px;
+    height: 30px;
+    font-size: 0.9rem;
   }
 
-  .win {
-    top: 40px !important;
-    left: 88px !important;
-    min-width: 0;
-    width: calc(100% - 6rem) !important;
-    max-width: calc(100% - 6rem);
-  }
-
+  .win,
   .win--content {
-    top: 48px !important;
+    top: 118px !important;
     left: 0.5rem !important;
     width: calc(100% - 1rem) !important;
     max-width: calc(100% - 1rem);
@@ -717,7 +748,7 @@ article img {
 
   .win-body {
     padding: var(--space-2);
-    max-height: 60dvh;
+    max-height: calc(100dvh - 220px);
   }
 
   h1 {
